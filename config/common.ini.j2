@@ -1,0 +1,24 @@
+[Common]
+NewsEnable={{ MT5_NEWS_ENABLE | default(0) }}
+SoundEnable={{ MT5_SOUND_ENABLE | default(0) }}
+AutoConfiguration={{ MT5_AUTO_CONFIGURATION | default(0) }}
+EnableNotifications={{ MT5_ENABLE_NOTIFICATIONS | default(0) }}
+{% if MT5_LOGIN %}
+Login={{ MT5_LOGIN }}
+{% endif %}
+{% if MT5_PASSWORD %}
+Password={{ MT5_PASSWORD }}
+{% endif %}
+{% if MT5_SERVER %}
+Server={{ MT5_SERVER }}
+{% endif %}
+
+[Experts]
+AllowLiveTrading={{ MT5_ALLOW_LIVE_TRADING | default(1) }}
+AllowDllImport={{ MT5_ALLOW_DLL_IMPORT | default(1) }}
+Enabled={{ MT5_EXPERTS_ENABLED | default(1) }}
+
+[Startup]
+Expert={{ MT5_STARTUP_EXPERT | default('RestGateway') }}
+Symbol={{ MT5_STARTUP_SYMBOL | default('EURUSD') }}
+Period={{ MT5_STARTUP_PERIOD | default('H1') }}
