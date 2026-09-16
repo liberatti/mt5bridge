@@ -1,4 +1,3 @@
-import os
 import logging
 from services.mt5_gateway import gateway_client as mt5
 from services.base_service import BaseService

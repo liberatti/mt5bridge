@@ -119,13 +119,10 @@ Or for errors:
 
 | Endpoint | Method | MT5 Method | Description |
 | :--- | :--- | :--- | :--- |
-| `/api/initialize` | `POST` / `GET` | `mt5.initialize()` | Initializes connection to MT5 terminal |
-| `/api/shutdown` | `POST` | `mt5.shutdown()` | Closes MT5 terminal connection |
 | `/api/version` | `GET` | `mt5.version()` | Returns MT5 terminal build and version |
 | `/api/last_error` | `GET` | `mt5.last_error()` | Returns last error code and description |
 | `/api/terminal_info` | `GET` | `mt5.terminal_info()` | Terminal state (connected, trade allowed, etc.) |
 | `/api/account_info` | `GET` | `mt5.account_info()` | Account balance, equity, margin, leverage |
-| `/api/login` | `POST` | `mt5.login()` | Authenticates account credentials |
 
 ---
 
@@ -191,6 +188,22 @@ Or for errors:
 1. You can open a free demo account through [MetaTrader Web Terminal](https://web.metatrader.app/terminal?mode=demo&lang=en) or the MetaTrader 5 desktop/mobile app.
 2. Select the **MetaQuotes-Demo** server.
 3. Configure your `MT5_LOGIN` and `MT5_PASSWORD` in `docker-compose.yml` to automatically connect on startup.
+
+---
+
+## 🧪 Running Automated API Tests
+
+To validate the full API lifecycle and execute a live test trade (market buy and position close) on your demo account:
+
+```bash
+python test_api.py --url http://localhost:5000 --symbol EURUSD --volume 0.01
+```
+
+Available flags:
+- `--url`: Base URL of the running API (default: `http://localhost:5000` or `API_URL` env).
+- `--symbol`: Trading symbol for tick/rates/orders (default: `EURUSD`).
+- `--volume`: Lot size for the test order (default: `0.01`).
+- `--no-close`: Keeps the test position open instead of automatically closing it.
 
 ---
 

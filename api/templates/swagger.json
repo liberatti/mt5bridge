@@ -37,76 +37,6 @@
     }
   ],
   "paths": {
-    "/api/initialize": {
-      "get": {
-        "tags": [
-          "System"
-        ],
-        "summary": "Initialize MT5 Terminal (Default/Active settings)",
-        "description": "Establishes a connection to the MetaTrader 5 terminal with default configuration.",
-        "responses": {
-          "200": {
-            "description": "Initialization status",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponse"
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "tags": [
-          "System"
-        ],
-        "summary": "Initialize MT5 Terminal with parameters",
-        "description": "Establishes a connection to the MetaTrader 5 terminal with specific credentials or terminal path.",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/InitializeRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Initialization result",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/shutdown": {
-      "post": {
-        "tags": [
-          "System"
-        ],
-        "summary": "Shutdown MT5 Connection",
-        "description": "Closes the connection to the MetaTrader 5 terminal.",
-        "responses": {
-          "200": {
-            "description": "Shutdown status",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/version": {
       "get": {
         "tags": [
@@ -180,47 +110,6 @@
         "responses": {
           "200": {
             "description": "Account details",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/login": {
-      "post": {
-        "tags": [
-          "System"
-        ],
-        "summary": "Login to Trading Account",
-        "description": "Authenticates the terminal with a broker account, password, and server.",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/LoginRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Login successful",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid parameters or credentials",
             "content": {
               "application/json": {
                 "schema": {
@@ -1431,71 +1320,6 @@
           "timestamp": {
             "type": "string",
             "example": "2026-09-15T18:00:00.000000+00:00"
-          }
-        }
-      },
-      "InitializeRequest": {
-        "type": "object",
-        "properties": {
-          "path": {
-            "type": "string",
-            "description": "Terminal executable path",
-            "example": "C:\\Program Files\\MetaTrader 5\\terminal64.exe"
-          },
-          "login": {
-            "type": "integer",
-            "description": "Account number",
-            "example": 12345678
-          },
-          "password": {
-            "type": "string",
-            "description": "Account password",
-            "example": "TraderPassword123"
-          },
-          "server": {
-            "type": "string",
-            "description": "Broker server name",
-            "example": "MetaQuotes-Demo"
-          },
-          "timeout": {
-            "type": "integer",
-            "description": "Connection timeout in ms",
-            "default": 60000
-          },
-          "portable": {
-            "type": "boolean",
-            "description": "Launch in portable mode",
-            "default": false
-          }
-        }
-      },
-      "LoginRequest": {
-        "type": "object",
-        "required": [
-          "login",
-          "password",
-          "server"
-        ],
-        "properties": {
-          "login": {
-            "type": "integer",
-            "description": "Account number",
-            "example": 12345678
-          },
-          "password": {
-            "type": "string",
-            "description": "Trading password",
-            "example": "SecretPass123"
-          },
-          "server": {
-            "type": "string",
-            "description": "Broker server name",
-            "example": "MetaQuotes-Demo"
-          },
-          "timeout": {
-            "type": "integer",
-            "description": "Timeout in milliseconds",
-            "default": 60000
           }
         }
       },

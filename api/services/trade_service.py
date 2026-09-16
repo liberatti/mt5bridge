@@ -92,6 +92,23 @@ class TradeService(BaseService):
             res.append(item)
         return res
 
+    def _get_filling_mode(self, symbol, type_filling=None):
+        if type_filling is not None:
+            return int(type_filling)
+        try:
+            sym_info = mt5.symbol_info(symbol)
+            if sym_info and hasattr(sym_info, "filling_mode"):
+                fm = int(sym_info.filling_mode)
+                if fm & 1:
+                    return mt5.ORDER_FILLING_FOK
+                elif fm & 2:
+                    return mt5.ORDER_FILLING_IOC
+                elif fm & 4:
+                    return mt5.ORDER_FILLING_RETURN
+        except Exception:
+            pass
+        return mt5.ORDER_FILLING_IOC
+
     def open_order(self, symbol, order_type_str, volume, price=None, sl=None, tp=None, deviation=20, comment="", magic=0, type_filling=None):
         self.ensure_initialized()
         order_type_str = str(order_type_str).upper()
@@ -111,7 +128,7 @@ class TradeService(BaseService):
             else:
                 raise ValueError("Price is required for pending orders")
 
-        fill_mode = int(type_filling) if type_filling is not None else mt5.ORDER_FILLING_FOK
+        fill_mode = self._get_filling_mode(symbol, type_filling)
         request = {
             "action": mt5.TRADE_ACTION_DEAL if order_type in (mt5.ORDER_TYPE_BUY, mt5.ORDER_TYPE_SELL) else mt5.TRADE_ACTION_PENDING,
             "symbol": symbol,
@@ -151,6 +168,7 @@ class TradeService(BaseService):
             raise RuntimeError(f"Failed to get tick for {pos.symbol}")
         price = tick.bid if close_type == mt5.ORDER_TYPE_SELL else tick.ask
 
+        fill_mode = self._get_filling_mode(pos.symbol)
         request = {
             "action": mt5.TRADE_ACTION_DEAL,
             "position": int(ticket),
@@ -161,7 +179,7 @@ class TradeService(BaseService):
             "deviation": int(deviation),
             "comment": str(comment),
             "type_time": mt5.ORDER_TIME_GTC,
-            "type_filling": mt5.ORDER_FILLING_IOC,
+            "type_filling": fill_mode,
         }
         res = mt5.order_send(request)
         if res is None:
@@ -186,7 +204,7 @@ class TradeService(BaseService):
         res = mt5.order_send(request)
         if res is None:
             raise RuntimeError(f"Modify failed: {mt5.last_error()}")
-        if res.retcode != mt5.TRADE_RETCODE_DONE:
+        if res.retcode not in (mt5.TRADE_RETCODE_DONE, mt5.TRADE_RETCODE_PLACED, mt5.TRADE_RETCODE_NO_CHANGES):
             raise RuntimeError(f"Modify rejected (retcode {res.retcode}): {res.comment}")
         return res._asdict()
 

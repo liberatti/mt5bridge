@@ -24,4 +24,3 @@ def api_terminal_info():
 @system_bp.route("/account_info", methods=["GET"])
 def api_account_info():
     return response_data(service.account_info())
-

@@ -127,6 +127,8 @@ def parse_timeframe(tf_val):
     if isinstance(tf_val, int):
         return tf_val
     if isinstance(tf_val, str):
+        if tf_val.isdigit():
+            return int(tf_val)
         tf = TIMEFRAME_MAP.get(tf_val.upper())
         if tf is not None:
             return tf

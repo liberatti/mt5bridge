@@ -24,6 +24,17 @@ echo "Wine Prefix: $WINEPREFIX"
 echo "Wine Binary: $(which wine 2>/dev/null || echo 'wine')"
 echo "========================================================"
 
+# Configure ALSA dummy null device to suppress audio driver logs
+mkdir -p /home/mt5user
+cat << 'EOF' > /home/mt5user/.asoundrc
+pcm.!default {
+    type null
+}
+ctl.!default {
+    type null
+}
+EOF
+
 # Cleanup existing X locks
 rm -f /tmp/.X0-lock /tmp/.X11-unix/X0
 

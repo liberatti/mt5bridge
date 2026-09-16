@@ -109,4 +109,3 @@ def api_copy_ticks_range():
 
     ticks = service.copy_ticks_range(symbol, date_from, date_to, flags)
     return response_data({"symbol": symbol, "count": len(ticks), "ticks": ticks})
-

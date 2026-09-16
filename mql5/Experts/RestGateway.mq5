@@ -693,9 +693,14 @@ string HandleOrderSend(string json)
    request.position = (ulong)ExtractJsonInt(json, "position", 0);
    request.position_by = (ulong)ExtractJsonInt(json, "position_by", 0);
    
-   bool success = OrderSend(request, result);
+   ResetLastError();
+   OrderSend(request, result);
+   if(result.retcode == 0)
+   {
+      result.retcode = (uint)GetLastError();
+   }
    
-   string res = "{\"status\":\"" + (success ? "ok" : "error") + "\",\"action\":\"order_send\",\"data\":{";
+   string res = "{\"status\":\"ok\",\"action\":\"order_send\",\"data\":{";
    res += "\"retcode\":" + (string)result.retcode + ",";
    res += "\"deal\":" + (string)result.deal + ",";
    res += "\"order\":" + (string)result.order + ",";
@@ -703,7 +708,7 @@ string HandleOrderSend(string json)
    res += "\"price\":" + DoubleToString(result.price, 5) + ",";
    res += "\"bid\":" + DoubleToString(result.bid, 5) + ",";
    res += "\"ask\":" + DoubleToString(result.ask, 5) + ",";
-   res += "\"comment\":\"" + JsonEscape(result.comment) + "\",";
+   res += "\"comment\":\"" + JsonEscape(result.comment != "" ? result.comment : (string)result.retcode) + "\",";
    res += "\"request_id\":" + (string)result.request_id + ",";
    res += "\"retcode_external\":" + (string)result.retcode_external;
    res += "}}";
@@ -733,9 +738,14 @@ string HandleOrderCheck(string json)
    request.position = (ulong)ExtractJsonInt(json, "position", 0);
    request.position_by = (ulong)ExtractJsonInt(json, "position_by", 0);
    
-   bool check = OrderCheck(request, result);
+   ResetLastError();
+   OrderCheck(request, result);
+   if(result.retcode == 0)
+   {
+      result.retcode = (uint)GetLastError();
+   }
    
-   string res = "{\"status\":\"" + (check ? "ok" : "error") + "\",\"action\":\"order_check\",\"data\":{";
+   string res = "{\"status\":\"ok\",\"action\":\"order_check\",\"data\":{";
    res += "\"retcode\":" + (string)result.retcode + ",";
    res += "\"balance\":" + DoubleToString(result.balance, 2) + ",";
    res += "\"equity\":" + DoubleToString(result.equity, 2) + ",";

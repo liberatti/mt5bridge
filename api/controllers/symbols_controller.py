@@ -60,4 +60,3 @@ def api_market_book_release():
     if not symbol:
         return response_error(msg="Field 'symbol' is required", code=400)
     return response_data(service.market_book_release(symbol))
-

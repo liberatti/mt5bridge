@@ -35,6 +35,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3-pip \
     python3-venv \
     && locale-gen en_US.UTF-8 \
+    && echo 'pcm.!default { type null }' > /etc/asound.conf \
+    && echo 'ctl.!default { type null }' >> /etc/asound.conf \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 

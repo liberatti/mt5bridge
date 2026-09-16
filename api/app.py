@@ -1,8 +1,8 @@
 import os
-import sys
 import time
 import logging
-from flask import Flask, request, g
+import threading
+from flask import Flask
 from flask_cors import CORS
 from werkzeug.exceptions import HTTPException
 
@@ -34,14 +34,12 @@ def create_app():
     # 4. Auto-initialize MetaTrader 5 connection on server startup in background
     def _bg_init():
         try:
-            import time
             time.sleep(1)
             from services.base_service import BaseService
             BaseService.ensure_initialized()
         except Exception as e:
             logger.warning("MetaTrader 5 background auto-initialization deferred: %s", e)
 
-    import threading
     threading.Thread(target=_bg_init, daemon=True).start()
 
     return app

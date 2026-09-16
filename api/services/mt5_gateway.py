@@ -1,9 +1,7 @@
 import os
 import json
-import time
 import socket
 import logging
-from types import SimpleNamespace
 
 logger = logging.getLogger("mt5_gateway")
 
@@ -13,6 +11,7 @@ class StructObject(dict):
     Dict subclass that allows attribute-style access and _asdict() compatibility
     with MetaTrader5 NamedTuple return types.
     """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.__dict__ = self
@@ -125,7 +124,13 @@ class Mt5GatewayClient:
         self.timeout = float(timeout)
         self._last_error = (0, "Success")
 
-    def _send_request(self, action: str, params: dict = None, timeout: float = None, silent: bool = False) -> dict:
+    def _send_request(
+        self,
+        action: str,
+        params: dict = None,
+        timeout: float = None,
+        silent: bool = False,
+    ) -> dict:
         req_payload = {}
         if params:
             req_payload.update(params)
@@ -156,9 +161,14 @@ class Mt5GatewayClient:
                     except socket.timeout:
                         break
 
-                raw_data = b"".join(response_chunks).decode("utf-8", errors="ignore").strip()
+                raw_data = (
+                    b"".join(response_chunks).decode("utf-8", errors="ignore").strip()
+                )
                 if not raw_data:
-                    self._last_error = (-1, f"Empty response from MT5 gateway on action '{action}'")
+                    self._last_error = (
+                        -1,
+                        f"Empty response from MT5 gateway on action '{action}'",
+                    )
                     raise RuntimeError(self._last_error[1])
 
                 res = json.loads(raw_data)
@@ -188,7 +198,6 @@ class Mt5GatewayClient:
         except Exception:
             return False
 
-
     def initialize(self, **kwargs) -> bool:
         """
         Check if RestGateway TCP socket is alive and responding.
@@ -203,7 +212,11 @@ class Mt5GatewayClient:
 
     def version(self):
         data = self._send_request("version")
-        return (data.get("version", 500), data.get("build", 0), data.get("release_date", ""))
+        return (
+            data.get("version", 500),
+            data.get("build", 0),
+            data.get("release_date", ""),
+        )
 
     def terminal_info(self):
         data = self._send_request("terminal_info")
@@ -233,54 +246,91 @@ class Mt5GatewayClient:
         return [StructObject(item) for item in data]
 
     def copy_rates_from(self, symbol: str, timeframe: int, date_from, count: int):
-        ts = int(date_from.timestamp()) if hasattr(date_from, "timestamp") else int(date_from)
-        data = self._send_request("copy_rates_from", {
-            "symbol": symbol,
-            "timeframe": int(timeframe),
-            "date_from": ts,
-            "count": int(count)
-        })
+        ts = (
+            int(date_from.timestamp())
+            if hasattr(date_from, "timestamp")
+            else int(date_from)
+        )
+        data = self._send_request(
+            "copy_rates_from",
+            {
+                "symbol": symbol,
+                "timeframe": int(timeframe),
+                "date_from": ts,
+                "count": int(count),
+            },
+        )
         return [StructObject(r) for r in data]
 
-    def copy_rates_from_pos(self, symbol: str, timeframe: int, start_pos: int, count: int):
-        data = self._send_request("copy_rates_from_pos", {
-            "symbol": symbol,
-            "timeframe": int(timeframe),
-            "start_pos": int(start_pos),
-            "count": int(count)
-        })
+    def copy_rates_from_pos(
+        self, symbol: str, timeframe: int, start_pos: int, count: int
+    ):
+        data = self._send_request(
+            "copy_rates_from_pos",
+            {
+                "symbol": symbol,
+                "timeframe": int(timeframe),
+                "start_pos": int(start_pos),
+                "count": int(count),
+            },
+        )
         return [StructObject(r) for r in data]
 
     def copy_rates_range(self, symbol: str, timeframe: int, date_from, date_to):
-        ts_from = int(date_from.timestamp()) if hasattr(date_from, "timestamp") else int(date_from)
-        ts_to = int(date_to.timestamp()) if hasattr(date_to, "timestamp") else int(date_to)
-        data = self._send_request("copy_rates_range", {
-            "symbol": symbol,
-            "timeframe": int(timeframe),
-            "date_from": ts_from,
-            "date_to": ts_to
-        })
+        ts_from = (
+            int(date_from.timestamp())
+            if hasattr(date_from, "timestamp")
+            else int(date_from)
+        )
+        ts_to = (
+            int(date_to.timestamp()) if hasattr(date_to, "timestamp") else int(date_to)
+        )
+        data = self._send_request(
+            "copy_rates_range",
+            {
+                "symbol": symbol,
+                "timeframe": int(timeframe),
+                "date_from": ts_from,
+                "date_to": ts_to,
+            },
+        )
         return [StructObject(r) for r in data]
 
     def copy_ticks_from(self, symbol: str, date_from, count: int, flags: int = -1):
-        ts = int(date_from.timestamp()) if hasattr(date_from, "timestamp") else int(date_from)
-        data = self._send_request("copy_ticks_from", {
-            "symbol": symbol,
-            "date_from": ts,
-            "count": int(count),
-            "flags": int(flags)
-        })
+        ts = (
+            int(date_from.timestamp())
+            if hasattr(date_from, "timestamp")
+            else int(date_from)
+        )
+        data = self._send_request(
+            "copy_ticks_from",
+            {
+                "symbol": symbol,
+                "date_from": ts,
+                "count": int(count),
+                "flags": int(flags),
+            },
+        )
         return [StructObject(t) for t in data]
 
     def copy_ticks_range(self, symbol: str, date_from, date_to, flags: int = -1):
-        ts_from = int(date_from.timestamp()) if hasattr(date_from, "timestamp") else int(date_from)
-        ts_to = int(date_to.timestamp()) if hasattr(date_to, "timestamp") else int(date_to)
-        data = self._send_request("copy_ticks_range", {
-            "symbol": symbol,
-            "date_from": ts_from,
-            "date_to": ts_to,
-            "flags": int(flags)
-        })
+        ts_from = (
+            int(date_from.timestamp())
+            if hasattr(date_from, "timestamp")
+            else int(date_from)
+        )
+        ts_to = (
+            int(date_to.timestamp()) if hasattr(date_to, "timestamp") else int(date_to)
+        )
+        data = self._send_request(
+            "copy_ticks_range",
+            {
+                "symbol": symbol,
+                "date_from": ts_from,
+                "date_to": ts_to,
+                "flags": int(flags),
+            },
+        )
         return [StructObject(t) for t in data]
 
     def positions_total(self) -> int:
@@ -322,30 +372,53 @@ class Mt5GatewayClient:
         return StructObject(data)
 
     def order_calc_margin(self, action: int, symbol: str, volume: float, price: float):
-        data = self._send_request("order_calc_margin", {
-            "action": int(action),
-            "symbol": symbol,
-            "volume": float(volume),
-            "price": float(price)
-        })
+        data = self._send_request(
+            "order_calc_margin",
+            {
+                "action": int(action),
+                "symbol": symbol,
+                "volume": float(volume),
+                "price": float(price),
+            },
+        )
         return data.get("margin", 0.0)
 
-    def order_calc_profit(self, action: int, symbol: str, volume: float, price_open: float, price_close: float):
-        data = self._send_request("order_calc_profit", {
-            "action": int(action),
-            "symbol": symbol,
-            "volume": float(volume),
-            "price_open": float(price_open),
-            "price_close": float(price_close)
-        })
+    def order_calc_profit(
+        self,
+        action: int,
+        symbol: str,
+        volume: float,
+        price_open: float,
+        price_close: float,
+    ):
+        data = self._send_request(
+            "order_calc_profit",
+            {
+                "action": int(action),
+                "symbol": symbol,
+                "volume": float(volume),
+                "price_open": float(price_open),
+                "price_close": float(price_close),
+            },
+        )
         return data.get("profit", 0.0)
 
-    def history_orders_get(self, date_from=None, date_to=None, group: str = None, ticket: int = None):
+    def history_orders_get(
+        self, date_from=None, date_to=None, group: str = None, ticket: int = None
+    ):
         params = {}
         if date_from:
-            params["date_from"] = int(date_from.timestamp()) if hasattr(date_from, "timestamp") else int(date_from)
+            params["date_from"] = (
+                int(date_from.timestamp())
+                if hasattr(date_from, "timestamp")
+                else int(date_from)
+            )
         if date_to:
-            params["date_to"] = int(date_to.timestamp()) if hasattr(date_to, "timestamp") else int(date_to)
+            params["date_to"] = (
+                int(date_to.timestamp())
+                if hasattr(date_to, "timestamp")
+                else int(date_to)
+            )
         if group:
             params["group"] = group
         if ticket:
@@ -353,12 +426,27 @@ class Mt5GatewayClient:
         data = self._send_request("history_orders_get", params)
         return [StructObject(o) for o in data]
 
-    def history_deals_get(self, date_from=None, date_to=None, group: str = None, ticket: int = None, position: int = None):
+    def history_deals_get(
+        self,
+        date_from=None,
+        date_to=None,
+        group: str = None,
+        ticket: int = None,
+        position: int = None,
+    ):
         params = {}
         if date_from:
-            params["date_from"] = int(date_from.timestamp()) if hasattr(date_from, "timestamp") else int(date_from)
+            params["date_from"] = (
+                int(date_from.timestamp())
+                if hasattr(date_from, "timestamp")
+                else int(date_from)
+            )
         if date_to:
-            params["date_to"] = int(date_to.timestamp()) if hasattr(date_to, "timestamp") else int(date_to)
+            params["date_to"] = (
+                int(date_to.timestamp())
+                if hasattr(date_to, "timestamp")
+                else int(date_to)
+            )
         if group:
             params["group"] = group
         if ticket:
@@ -367,7 +455,6 @@ class Mt5GatewayClient:
             params["position"] = int(position)
         data = self._send_request("history_deals_get", params)
         return [StructObject(d) for d in data]
-
 
     def history_orders_total(self, date_from=None, date_to=None):
         orders = self.history_orders_get(date_from=date_from, date_to=date_to)
@@ -392,14 +479,30 @@ class Mt5GatewayClient:
         if not tick:
             return None
         return [
-            StructObject({"type": 1, "price": tick.get("ask", 0.0), "volume": 10.0, "volume_dbl": 10.0}),
-            StructObject({"type": 2, "price": tick.get("bid", 0.0), "volume": 10.0, "volume_dbl": 10.0}),
+            StructObject(
+                {
+                    "type": 1,
+                    "price": tick.get("ask", 0.0),
+                    "volume": 10.0,
+                    "volume_dbl": 10.0,
+                }
+            ),
+            StructObject(
+                {
+                    "type": 2,
+                    "price": tick.get("bid", 0.0),
+                    "volume": 10.0,
+                    "volume_dbl": 10.0,
+                }
+            ),
         ]
 
     def market_book_release(self, symbol: str) -> bool:
         return True
 
-    def login(self, login: int, password: str = None, server: str = None, timeout: int = None) -> bool:
+    def login(
+        self, login: int, password: str = None, server: str = None, timeout: int = None
+    ) -> bool:
         # Check if gateway is alive
         return self.ping()
 
@@ -454,4 +557,3 @@ TRADE_ACTION_SLTP = 6
 TRADE_ACTION_MODIFY = 7
 TRADE_ACTION_REMOVE = 8
 TRADE_ACTION_CLOSE_BY = 10
-
