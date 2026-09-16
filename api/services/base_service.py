@@ -10,15 +10,15 @@ logger = logging.getLogger("base_service")
 
 class BaseService:
     """
-    Base class providing common MetaTrader 5 initialization and state management.
+    Base service providing connection management, auto-recovery, and environment diagnostics for MetaTrader 5.
     """
 
-    _initialized = False
+    _initialized: bool = False
 
     @classmethod
-    def _inspect_and_dismiss_modal_windows(cls):
+    def _inspect_and_dismiss_modal_windows(cls) -> None:
         """
-        Dismisses any pending first-use modal dialogs via xdotool in Xvfb.
+        Dismiss any pending first-use modal dialogs (e.g. account setup wizards) via xdotool in Xvfb.
         """
         try:
             subprocess.run(["xdotool", "key", "Escape"], capture_output=True, timeout=1)
@@ -26,7 +26,13 @@ class BaseService:
             pass
 
     @classmethod
-    def _dump_diagnostics(cls, path):
+    def _dump_diagnostics(cls, path: str) -> None:
+        """
+        Dump active Linux processes and MT5/Wine terminal logs for troubleshooting startup failures.
+
+        Args:
+            path (str): Expected path to MT5 terminal binary.
+        """
         logger.info("=== WINE / MT5 ENVIRONMENT DIAGNOSTICS ===")
         # 1. Active Linux processes inside container
         try:
@@ -60,7 +66,20 @@ class BaseService:
         logger.info("===========================================")
 
     @classmethod
-    def ensure_initialized(cls, retries=15, delay=1.0):
+    def ensure_initialized(cls, retries: int = 15, delay: float = 1.0) -> bool:
+        """
+        Verify connection to the MetaTrader 5 TCP RestGateway socket, retrying if necessary.
+
+        Args:
+            retries (int, optional): Number of connection retry attempts. Defaults to 15.
+            delay (float, optional): Seconds to wait between retries. Defaults to 1.0.
+
+        Returns:
+            bool: True if connected.
+
+        Raises:
+            RuntimeError: If connection cannot be established after all retries.
+        """
         if cls._initialized:
             return True
 
@@ -108,3 +127,4 @@ class BaseService:
             os.environ.get("MT5_PATH", "C:/Program Files/MetaTrader 5/terminal64.exe")
         )
         raise RuntimeError(f"MT5 Gateway initialization failed: {last_err}")
+

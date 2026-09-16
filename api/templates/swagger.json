@@ -1299,27 +1299,39 @@
       "ApiResponse": {
         "type": "object",
         "properties": {
-          "success": {
-            "type": "boolean",
-            "example": true
+          "code": {
+            "type": "integer",
+            "example": 200
           },
           "data": {
             "type": "object",
             "nullable": true
-          },
-          "error": {
-            "type": "string",
-            "nullable": true,
-            "example": null
+          }
+        }
+      },
+      "ApiErrorResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "example": 400
           },
           "message": {
             "type": "string",
-            "nullable": true,
-            "example": "Operation completed"
+            "example": "Bad Request / Validation Error"
           },
-          "timestamp": {
+          "details": {
             "type": "string",
-            "example": "2026-09-15T18:00:00.000000+00:00"
+            "nullable": true,
+            "example": "Detailed error context"
+          },
+          "url": {
+            "type": "string",
+            "example": "http://localhost:5000/api/..."
+          },
+          "method": {
+            "type": "string",
+            "example": "POST"
           }
         }
       },
@@ -1371,9 +1383,12 @@
               "BUY_LIMIT",
               "SELL_LIMIT",
               "BUY_STOP",
-              "SELL_STOP"
+              "SELL_STOP",
+              "BUY_STOP_LIMIT",
+              "SELL_STOP_LIMIT"
             ],
-            "default": "BUY"
+            "default": "BUY",
+            "description": "Order type string"
           },
           "volume": {
             "type": "number",
@@ -1407,6 +1422,11 @@
             "type": "integer",
             "default": 0,
             "description": "Expert Advisor Magic Number ID"
+          },
+          "type_filling": {
+            "type": "integer",
+            "description": "Order execution filling mode (0 = FOK, 1 = IOC, 2 = RETURN, 3 = BOC)",
+            "example": 1
           }
         }
       },

@@ -13,7 +13,16 @@ from routes import register_routes
 logger = logging.getLogger("flask_app")
 
 
-def create_app():
+def create_app() -> Flask:
+    """
+    Application factory creating and configuring the Flask REST API application.
+
+    Initializes logging middleware, CORS, global exception handlers, blueprints,
+    Swagger documentation routes, and launches background auto-initialization for MetaTrader 5.
+
+    Returns:
+        Flask: Fully configured Flask application instance.
+    """
     app = Flask(__name__, template_folder="templates")
     LoggingManager(app)
     CORS(app)
@@ -43,6 +52,7 @@ def create_app():
     threading.Thread(target=_bg_init, daemon=True).start()
 
     return app
+
 
 
 # WSGI application instance (for Gunicorn / Waitress / uWSGI)

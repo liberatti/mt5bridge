@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+from typing import Any, List, Dict, Union, Optional
 
 # Standard MetaTrader 5 Timeframe Constants
 TIMEFRAME_M1 = 1
@@ -99,12 +100,23 @@ COPY_TICKS_MAP = {
 }
 
 
-def parse_date(date_val):
+def parse_date(date_val: Optional[Any]) -> Optional[datetime]:
     """
-    Parses timestamps, ISO 8601 strings, or date strings into timezone-aware datetime objects.
+    Parse timestamps, ISO 8601 strings, or standard date strings into timezone-aware datetime objects.
+
+    Args:
+        date_val (str, int, float, or datetime, optional): Input date representation.
+
+    Returns:
+        datetime, optional: Timezone-aware UTC datetime object, or None if input was None.
+
+    Raises:
+        ValueError: If the string format cannot be parsed.
     """
     if date_val is None:
         return None
+    if isinstance(date_val, datetime):
+        return date_val.replace(tzinfo=timezone.utc) if date_val.tzinfo is None else date_val
     if isinstance(date_val, (int, float)):
         return datetime.fromtimestamp(date_val, tz=timezone.utc)
     if isinstance(date_val, str):
@@ -125,9 +137,18 @@ def parse_date(date_val):
     raise ValueError(f"Invalid date format: {date_val}")
 
 
-def parse_timeframe(tf_val):
+def parse_timeframe(tf_val: Union[str, int]) -> int:
     """
-    Converts timeframe string (e.g. 'M1', 'H1', 'D1') or integer into MetaTrader 5 timeframe enum.
+    Convert timeframe string (e.g. 'M1', 'H1', 'D1') or integer into MetaTrader 5 timeframe enum value.
+
+    Args:
+        tf_val (str or int): Timeframe name or raw integer constant.
+
+    Returns:
+        int: MetaTrader 5 timeframe integer.
+
+    Raises:
+        ValueError: If timeframe string is unknown.
     """
     if isinstance(tf_val, int):
         return tf_val
@@ -142,9 +163,15 @@ def parse_timeframe(tf_val):
     )
 
 
-def format_rates(rates):
+def format_rates(rates: Optional[List[Any]]) -> List[Dict[str, Any]]:
     """
-    Formats rate records into a serializable JSON dictionary list.
+    Format OHLCV rate records into a serializable JSON dictionary list with UTC ISO timestamps.
+
+    Args:
+        rates (list): Array of raw rate tuples/dictionaries from MT5.
+
+    Returns:
+        list[dict]: Array of formatted candle dictionaries (time, time_iso, open, high, low, close, tick_volume, spread, real_volume).
     """
     if rates is None:
         return []
@@ -179,9 +206,15 @@ def format_rates(rates):
     return res
 
 
-def format_ticks(ticks):
+def format_ticks(ticks: Optional[List[Any]]) -> List[Dict[str, Any]]:
     """
-    Formats tick records into a serializable JSON dictionary list.
+    Format price tick records into a serializable JSON dictionary list with UTC ISO timestamps.
+
+    Args:
+        ticks (list): Array of raw tick tuples/dictionaries from MT5.
+
+    Returns:
+        list[dict]: Array of formatted tick dictionaries (time, time_msc, time_iso, bid, ask, last, volume, flags, volume_real).
     """
     if ticks is None:
         return []
@@ -222,3 +255,4 @@ def format_ticks(ticks):
             }
         )
     return res
+
