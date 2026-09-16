@@ -57,7 +57,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: liberatti/nxguard
+          images: liberatti/mt5bridge
           tags: |
             type=raw,value=latest
 
