@@ -29,6 +29,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     net-tools \
     winbind \
     git \
+    libegl1 \
+    libgl1 \
+    libgl1-mesa-dri \
+    libglx-mesa0 \
     python3 \
     python3-pip \
     && locale-gen en_US.UTF-8 \
@@ -108,7 +112,7 @@ RUN chmod +x /entrypoint.sh
 
 ENV HOME=/home/mt5user \
     WINEPREFIX=/home/mt5user/.mt5 \
-    WINEDEBUG=+err \
+    WINEDEBUG=-all \
     WINEDLLOVERRIDES="mscoree,mshtml=" \
     WINEARCH=win64 \
     DISPLAY=:0 \

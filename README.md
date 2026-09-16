@@ -4,11 +4,7 @@
 
 <p align="center">
   <a href="https://opensource.org/licenses/Apache-2.0"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="License" /></a>
-  <a href="https://github.com/liberatti/mt5bridge"><img src="https://img.shields.io/badge/GitHub-liberatti%2Fmt5bridge-blue.svg?logo=github" alt="GitHub Repo" /></a>
   <a href="https://www.docker.com/"><img src="https://img.shields.io/badge/Platform-Docker-blue.svg?logo=docker" alt="Docker" /></a>
-  <a href="http://localhost:5000/"><img src="https://img.shields.io/badge/OpenAPI-3.0%20%2F%20Swagger-85EA2D.svg?logo=swagger" alt="Swagger UI" /></a>
-  <a href="https://www.python.org/"><img src="https://img.shields.io/badge/Python-3.12-yellow.svg?logo=python" alt="Python" /></a>
-  <a href="https://palletsprojects.com/p/flask/"><img src="https://img.shields.io/badge/Flask-REST%20API-lightgrey.svg?logo=flask" alt="Flask" /></a>
   <a href="https://github.com/sponsors/liberatti"><img src="https://img.shields.io/badge/Sponsor-♥-ea4aaa?style=flat&logo=github" alt="Sponsor" /></a>
 </p>
 
