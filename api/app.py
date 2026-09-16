@@ -8,6 +8,7 @@ from werkzeug.exceptions import HTTPException
 
 import config
 import nxcore.config as nxcore_config
+from nxcore.middleware.jwt_manager import JWTManager
 from nxcore.middleware.logging_manager import LoggingManager
 from nxcore.controllers.base_controller import response_error, response_error_500
 from routes import register_routes
@@ -39,6 +40,7 @@ def create_app() -> Flask:
     app.config["SECURITY_ENABLED"] = config.SECURITY_ENABLED
     app.config["API_KEY"] = config.API_KEY
     LoggingManager(app)
+    JWTManager(app)
     CORS(app)
 
     # 1. Global Error handling

@@ -82,6 +82,7 @@ docker pull liberatti/mt5bridge:latest
 # Run container with your demo or live broker credentials
 docker run -d --name mt5bridge \
   -p 5000:5000 \
+  -p 22347:22347 \
   -e MT5_LOGIN=112728385 \
   -e MT5_PASSWORD=YourPassword \
   -e MT5_SERVER=MetaQuotes-Demo \
@@ -106,6 +107,7 @@ services:
     restart: unless-stopped
     ports:
       - "5000:5000"
+      - "22347:22347"
     environment:
       - MT5_LOGIN=112728385
       - MT5_PASSWORD=YourPassword

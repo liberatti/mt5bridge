@@ -129,6 +129,9 @@ ENV HOME=/home/mt5user \
     MT5_GATEWAY_TIMEOUT=10.0 \
     SECURITY_ENABLED=true
 USER mt5user
+
 EXPOSE 5000
+
+EXPOSE 22347
 
 ENTRYPOINT ["/entrypoint.sh"]

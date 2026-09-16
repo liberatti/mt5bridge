@@ -36,6 +36,14 @@
       "description": "Historical orders and trade deals execution logs"
     }
   ],
+  "security": [
+    {
+      "ApiKeyAuth": []
+    },
+    {
+      "BearerAuth": []
+    }
+  ],
   "paths": {
     "/api/version": {
       "get": {
@@ -1295,6 +1303,20 @@
     }
   },
   "components": {
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-api-key",
+        "description": "API Key authentication passed via the 'x-api-key' request header."
+      },
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "JWT Bearer Token authentication."
+      }
+    },
     "schemas": {
       "ApiResponse": {
         "type": "object",
