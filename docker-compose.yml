@@ -1,5 +1,5 @@
 volumes:
-  mt5_wine_data:
+  mt5_data:
     driver: local
 
 services:
@@ -7,32 +7,15 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: liberatti/metatrader5-api:latest
+    image: liberatti/mt5bridge:latest
     ports:
       - "5000:5000"
     environment:
-      # Configurações da API REST (Waitress WSGI nativo Linux)
-      - PORT=5000
-      - HOST=0.0.0.0
-      - THREADS=8
-
-      # Configurações do Gateway TCP MQL5
-      - MT5_GATEWAY_HOST=127.0.0.1
-      - MT5_GATEWAY_PORT=22347
-      - MT5_GATEWAY_TIMEOUT=10.0
-
-      # Configurações do MetaTrader 5 (Wine)
-      - MT5_PORTABLE=1
-      - MT5_PATH=C:/Program Files/MetaTrader 5/terminal64.exe
-      - MT5_STARTUP_EXPERT=RestGateway
       - MT5_STARTUP_SYMBOL=EURUSD
       - MT5_STARTUP_PERIOD=H1
-
-      # Credenciais opcionais para login automático no MT5:
-      - MT5_LOGIN=xxxxxxxxxxxxx
-      - MT5_PASSWORD=xxxxxxxxxxx
+      - MT5_LOGIN=xxxxx
+      - MT5_PASSWORD=xxxxx
       - MT5_SERVER=MetaQuotes-Demo
-      - MT5_INVESTOR=xxxxxxxxxxx
-      - MT5_BROKER_PASSWORD=xxxxxxxxxxx
+      - MT5_INVESTOR=xxxx
     volumes:
-      - mt5_wine_data:/home/mt5user/.mt5
+      - mt5_data:/home/mt5user/.mt5

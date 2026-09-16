@@ -221,8 +221,9 @@ class MT5ApiTester:
         log_success(f"copy_ticks_from: Retrieved {len(t_from_list)} tick record(s)")
 
         # 5. copy_ticks_range
-        log_info("Fetching ticks by date range (/api/copy_ticks_range)...")
-        ticks_range_res = self._request("GET", "/api/copy_ticks_range", params={"symbol": self.symbol, "date_from": dt_start, "date_to": dt_end, "flags": "ALL"})
+        dt_ticks_start = (datetime.now(timezone.utc) - timedelta(minutes=5)).strftime("%Y-%m-%d %H:%M:%S")
+        log_info(f"Fetching ticks by date range from '{dt_ticks_start}' (/api/copy_ticks_range)...")
+        ticks_range_res = self._request("GET", "/api/copy_ticks_range", params={"symbol": self.symbol, "date_from": dt_ticks_start, "date_to": dt_end, "flags": "ALL"})
         ticks_range = self._get_data(ticks_range_res)
         t_range_list = ticks_range.get("ticks", ticks_range) if isinstance(ticks_range, dict) else ticks_range
         log_success(f"copy_ticks_range: Retrieved {len(t_range_list)} tick record(s)")

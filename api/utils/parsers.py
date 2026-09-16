@@ -112,7 +112,12 @@ def parse_date(date_val):
         try:
             return datetime.fromisoformat(date_str)
         except ValueError:
-            for fmt in ("%Y-%m-%d %H:%M:%S", "%Y-%m-%d", "%d.%m.%Y %H:%M:%S", "%d.%m.%Y"):
+            for fmt in (
+                "%Y-%m-%d %H:%M:%S",
+                "%Y-%m-%d",
+                "%d.%m.%Y %H:%M:%S",
+                "%d.%m.%Y",
+            ):
                 try:
                     return datetime.strptime(date_str, fmt).replace(tzinfo=timezone.utc)
                 except ValueError:
@@ -132,48 +137,88 @@ def parse_timeframe(tf_val):
         tf = TIMEFRAME_MAP.get(tf_val.upper())
         if tf is not None:
             return tf
-    raise ValueError(f"Invalid timeframe: {tf_val}. Valid strings: {list(TIMEFRAME_MAP.keys())}")
+    raise ValueError(
+        f"Invalid timeframe: {tf_val}. Valid strings: {list(TIMEFRAME_MAP.keys())}"
+    )
 
 
 def format_rates(rates):
     """
-    Formats numpy rate records into a serializable JSON dictionary list.
+    Formats rate records into a serializable JSON dictionary list.
     """
     if rates is None:
         return []
     res = []
     for r in rates:
-        res.append({
-            "time": int(r["time"]),
-            "time_iso": datetime.fromtimestamp(r["time"], tz=timezone.utc).isoformat(),
-            "open": float(r["open"]),
-            "high": float(r["high"]),
-            "low": float(r["low"]),
-            "close": float(r["close"]),
-            "tick_volume": int(r["tick_volume"]),
-            "spread": int(r["spread"]),
-            "real_volume": int(r["real_volume"]),
-        })
+        t_val = int(r["time"] if isinstance(r, dict) else getattr(r, "time"))
+        res.append(
+            {
+                "time": t_val,
+                "time_iso": datetime.fromtimestamp(t_val, tz=timezone.utc).isoformat(),
+                "open": float(r["open"] if isinstance(r, dict) else getattr(r, "open")),
+                "high": float(r["high"] if isinstance(r, dict) else getattr(r, "high")),
+                "low": float(r["low"] if isinstance(r, dict) else getattr(r, "low")),
+                "close": float(
+                    r["close"] if isinstance(r, dict) else getattr(r, "close")
+                ),
+                "tick_volume": int(
+                    r["tick_volume"]
+                    if isinstance(r, dict)
+                    else getattr(r, "tick_volume", 0)
+                ),
+                "spread": int(
+                    r["spread"] if isinstance(r, dict) else getattr(r, "spread", 0)
+                ),
+                "real_volume": int(
+                    r["real_volume"]
+                    if isinstance(r, dict)
+                    else getattr(r, "real_volume", 0)
+                ),
+            }
+        )
     return res
 
 
 def format_ticks(ticks):
     """
-    Formats numpy tick records into a serializable JSON dictionary list.
+    Formats tick records into a serializable JSON dictionary list.
     """
     if ticks is None:
         return []
     res = []
     for t in ticks:
-        res.append({
-            "time": int(t["time"]),
-            "time_msc": int(t["time_msc"]),
-            "time_iso": datetime.fromtimestamp(t["time"], tz=timezone.utc).isoformat(),
-            "bid": float(t["bid"]),
-            "ask": float(t["ask"]),
-            "last": float(t["last"]),
-            "volume": float(t["volume"]),
-            "flags": int(t["flags"]),
-            "volume_real": float(t["volume_real"]) if "volume_real" in t.dtype.names else 0.0,
-        })
+        t_val = int(t["time"] if isinstance(t, dict) else getattr(t, "time"))
+        t_msc = int(
+            t.get("time_msc", t_val * 1000)
+            if isinstance(t, dict)
+            else getattr(t, "time_msc", t_val * 1000)
+        )
+        vol_real = float(
+            t.get("volume_real", 0.0)
+            if isinstance(t, dict)
+            else getattr(t, "volume_real", 0.0)
+        )
+        res.append(
+            {
+                "time": t_val,
+                "time_msc": t_msc,
+                "time_iso": datetime.fromtimestamp(t_val, tz=timezone.utc).isoformat(),
+                "bid": float(t["bid"] if isinstance(t, dict) else getattr(t, "bid")),
+                "ask": float(t["ask"] if isinstance(t, dict) else getattr(t, "ask")),
+                "last": float(
+                    t.get("last", 0.0)
+                    if isinstance(t, dict)
+                    else getattr(t, "last", 0.0)
+                ),
+                "volume": float(
+                    t.get("volume", 0.0)
+                    if isinstance(t, dict)
+                    else getattr(t, "volume", 0.0)
+                ),
+                "flags": int(
+                    t.get("flags", 0) if isinstance(t, dict) else getattr(t, "flags", 0)
+                ),
+                "volume_real": vol_real,
+            }
+        )
     return res

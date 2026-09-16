@@ -148,7 +148,7 @@ class Mt5GatewayClient:
                 s.connect((self.host, self.port))
                 s.sendall(payload_bytes)
 
-                # Read response until EOF or newline
+                # Read response until EOF or trailing newline
                 response_chunks = []
                 while True:
                     try:
@@ -156,7 +156,7 @@ class Mt5GatewayClient:
                         if not chunk:
                             break
                         response_chunks.append(chunk)
-                        if b"\n" in chunk:
+                        if chunk.endswith(b"\n"):
                             break
                     except socket.timeout:
                         break
@@ -171,7 +171,12 @@ class Mt5GatewayClient:
                     )
                     raise RuntimeError(self._last_error[1])
 
-                res = json.loads(raw_data)
+                try:
+                    res = json.loads(raw_data)
+                except Exception as je:
+                    self._last_error = (-1, f"Failed parsing JSON response on '{action}': {je}")
+                    raise RuntimeError(self._last_error[1])
+
                 if res.get("status") != "ok":
                     err_msg = res.get("error", "Unknown gateway error")
                     self._last_error = (res.get("code", -1), err_msg)

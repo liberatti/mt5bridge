@@ -499,13 +499,15 @@ string HandleCopyTicksFrom(string json)
    long date_from = ExtractJsonInt(json, "date_from", 0);
    long count = ExtractJsonInt(json, "count", 100);
    uint flags = (uint)ExtractJsonInt(json, "flags", (long)COPY_TICKS_ALL);
-   if(count > 50000) count = 50000;
+   if(count > 10000) count = 10000;
    
    MqlTick ticks[];
    ulong from_msc = (ulong)date_from * 1000;
    int copied = CopyTicks(symbol, ticks, flags, from_msc, (uint)count);
-   if(copied <= 0)
+   if(copied < 0)
       return "{\"status\":\"error\",\"error\":\"CopyTicks failed\",\"code\":" + (string)GetLastError() + "}";
+   if(copied == 0)
+      return "{\"status\":\"ok\",\"action\":\"copy_ticks_from\",\"data\":[]}";
       
    int digits = (int)SymbolInfoInteger(symbol, SYMBOL_DIGITS);
    string res = "{\"status\":\"ok\",\"action\":\"copy_ticks_from\",\"data\":[";
@@ -536,9 +538,12 @@ string HandleCopyTicksRange(string json)
    ulong from_msc = (ulong)date_from * 1000;
    ulong to_msc = (ulong)date_to * 1000;
    int copied = CopyTicksRange(symbol, ticks, flags, from_msc, to_msc);
-   if(copied <= 0)
+   if(copied < 0)
       return "{\"status\":\"error\",\"error\":\"CopyTicksRange failed\",\"code\":" + (string)GetLastError() + "}";
+   if(copied == 0)
+      return "{\"status\":\"ok\",\"action\":\"copy_ticks_range\",\"data\":[]}";
       
+   if(copied > 5000) copied = 5000;
    int digits = (int)SymbolInfoInteger(symbol, SYMBOL_DIGITS);
    string res = "{\"status\":\"ok\",\"action\":\"copy_ticks_range\",\"data\":[";
    for(int i = 0; i < copied; i++)
