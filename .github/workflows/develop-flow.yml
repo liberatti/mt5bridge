@@ -2,9 +2,9 @@ name: CI / develop
 
 on:
   push:
-    branches: [ "v*-rc", "v*-fix"]
+    branches: [ "v*-rc", "v*-fix","develop"]
   pull_request:
-    branches: [ "v*-rc", "v*-fix"]
+    branches: [ "v*-rc", "v*-fix","develop"]
 
 permissions:
   contents: write
