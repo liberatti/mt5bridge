@@ -1,8 +1,58 @@
-.git
+# Git & Version Control
+.git/
 .gitignore
-mt5data/
+.github/
+
+# Agent / IDE configs
+.agents/
+.gemini/
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Python cache and environments
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
+*.py[cod]
+*$py.class
+*.so
+.venv/
+venv/
+ENV/
+env/
+build/
+dist/
+*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Environment, secrets & local configs
 .env
+.env.*
+*.key
+*.pem
+
+# Project documentation, media & tests
+README.md
+LICENSE
+assets/
+docs/
+test_*.py
+tests/
+
+# Docker compose & local data volumes
+docker-compose*.yml
+docker-compose*.yaml
+mt5data/
+.mt5/
+wine/
+
+# Logs & compiled MQL5 binaries (built inside image)
+*.log
+*.ex5
+
+# OS generated files
+.DS_Store
+Thumbs.db

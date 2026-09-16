@@ -1,19 +1,6 @@
 #!/usr/bin/env bash
 set -e
 
-# If running as root, fix volume permissions and drop to mt5user with gosu
-if [ "$(id -u)" = "0" ]; then
-    mkdir -p /home/mt5user/.mt5 /home/mt5user/api /tmp/.X11-unix
-    chown -R mt5user:mt5group /home/mt5user
-    chown root:root /tmp/.X11-unix
-    chmod 1777 /tmp/.X11-unix
-    exec gosu mt5user "$0" "$@"
-fi
-
-# ========================================================
-# Running as non-root user (mt5user)
-# ========================================================
-
 MT5_DIR="${WINEPREFIX}/drive_c/Program Files/MetaTrader 5"
 
 echo "========================================================"
