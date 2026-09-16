@@ -3,7 +3,7 @@ from jinja2 import Environment, FileSystemLoader
 
 
 def render_template(template_path: str, output_path: str, context: dict = None) -> str:
-    """Renderiza um arquivo de template Jinja2 e grava o resultado no caminho de saída."""
+    """Renders a Jinja2 template file and writes the output to the destination path."""
     template_dir = os.path.dirname(os.path.abspath(template_path))
     template_file = os.path.basename(template_path)
 
@@ -17,7 +17,7 @@ def render_template(template_path: str, output_path: str, context: dict = None) 
     with open(output_path, "w", encoding="utf-8") as f:
         f.write(rendered)
 
-    print(f"[Jinja2] Configuracao renderizada com sucesso em: {output_path}")
+    print(f"[Jinja2] Configuration rendered successfully at: {output_path}")
     return rendered
 
 

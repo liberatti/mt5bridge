@@ -5,57 +5,30 @@ import logging
 from flask import Flask, request, g
 from flask_cors import CORS
 from werkzeug.exceptions import HTTPException
-from utils.response import make_response
+
+from nxcore.middleware.logging_manager import LoggingManager
+from nxcore.controllers.base_controller import response_error, response_error_500
 from routes import register_routes
 
-# Configure structured logging
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
-    handlers=[logging.StreamHandler(sys.stdout)],
-)
 logger = logging.getLogger("flask_app")
-access_logger = logging.getLogger("access")
 
 
 def create_app():
     app = Flask(__name__, template_folder="templates")
+    LoggingManager(app)
     CORS(app)
 
-    # 1. Request Logging Middleware
-    @app.before_request
-    def start_timer():
-        g.start_time = time.time()
-
-    @app.after_request
-    def log_request(response):
-        duration_ms = (time.time() - getattr(g, "start_time", time.time())) * 1000
-        ip = request.headers.get("X-Forwarded-For", request.remote_addr)
-        query = f"?{request.query_string.decode('utf-8')}" if request.query_string else ""
-        access_logger.info(
-            "%s - \"%s %s%s %s\" %s %s [%.2fms]",
-            ip,
-            request.method,
-            request.path,
-            query,
-            request.environ.get("SERVER_PROTOCOL", "HTTP/1.1"),
-            response.status_code,
-            response.content_length or 0,
-            duration_ms,
-        )
-        return response
-
-    # 2. Global Error handling
+    # 1. Global Error handling
     @app.errorhandler(HTTPException)
     def handle_http_exception(e):
-        return make_response(error=e.description, status_code=e.code)
+        return response_error(msg=e.description, code=e.code)
 
     @app.errorhandler(Exception)
     def handle_exception(e):
         logger.exception("API Error: %s", e)
-        return make_response(error=str(e), status_code=500)
+        return response_error_500(msg=str(e), details=str(e))
 
-    # 3. Register all documentation and modular API routes
+    # 2. Register all documentation and modular API routes
     register_routes(app)
 
     # 4. Auto-initialize MetaTrader 5 connection on server startup in background

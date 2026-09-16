@@ -1,7 +1,11 @@
 FROM ubuntu:24.04
 
+LABEL org.opencontainers.image.title="mt5bridge"
+LABEL org.opencontainers.image.description="MetaTrader 5 on Linux with WineHQ and Native Python Flask REST API"
+LABEL org.opencontainers.image.source="https://github.com/liberatti/mt5bridge"
+LABEL org.opencontainers.image.url="https://github.com/liberatti/mt5bridge"
+LABEL org.opencontainers.image.licenses="Apache-2.0"
 LABEL maintainer="liberatti"
-LABEL description="MetaTrader 5 on Linux with WineHQ and Native Python Flask REST API"
 
 ENV DEBIAN_FRONTEND=noninteractive \
     LANG=en_US.UTF-8 \
@@ -26,6 +30,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     net-tools \
     gosu \
     winbind \
+    git \
     python3 \
     python3-pip \
     python3-venv \
@@ -34,7 +39,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # 2. Instalação de dependências Python nativas no Linux
-COPY api/requirements.txt /tmp/requirements.txt
+COPY requirements.txt /tmp/requirements.txt
 RUN pip install --no-cache-dir --break-system-packages -r /tmp/requirements.txt \
     && rm -f /tmp/requirements.txt
 
@@ -75,25 +80,22 @@ COPY --chown=mt5user:mt5group mql5/ /opt/setup/mql5/
 # Inicialização do Wine prefix, MT5 e compilação do RestGateway.mq5
 RUN Xvfb :99 -screen 0 1024x768x16 >/dev/null 2>&1 & XPID=$! \
     && export DISPLAY=:99 \
-    && sleep 2 \
     && echo "==> [1/3] Inicializando Wineboot..." \
     && wine wineboot -u \
-    && sleep 2 \
+    && wineserver -w \
     && echo "==> [2/3] Executando instalador do MetaTrader 5..." \
     && (wine /opt/setup/mt5setup.exe /auto &) \
     && for i in $(seq 1 45); do \
         [ -f "/opt/wine-template/drive_c/Program Files/MetaTrader 5/terminal64.exe" ] && break; \
         sleep 2; \
     done \
-    && sleep 3 \
+    && wineserver -w \
     && echo "==> [3/3] Compilando MQL5 RestGateway Expert Advisor..." \
     && mkdir -p "/opt/wine-template/drive_c/Program Files/MetaTrader 5/MQL5/Experts" \
     && cp -r /opt/setup/mql5/* "/opt/wine-template/drive_c/Program Files/MetaTrader 5/MQL5/" \
     && (cd "/opt/wine-template/drive_c/Program Files/MetaTrader 5" && wine metaeditor64.exe /compile:MQL5\\Experts\\RestGateway.mq5 /log:MQL5\\Experts\\RestGateway.log || true) \
-    && sleep 2 \
+    && wineserver -w \
     && echo "==> Finalizando wineserver..." \
-
-
     && wineserver -k 2>/dev/null || true \
     && kill $XPID 2>/dev/null || true
 
@@ -114,6 +116,17 @@ ENV WINEPREFIX=/home/mt5user/.mt5 \
     WINEDLLOVERRIDES="mscoree,mshtml=" \
     DISPLAY=:0 \
     SCREEN_RESOLUTION=1280x1024x24
+
+ENV MT5_PORTABLE=1 \
+    MT5_PATH="C:/Program Files/MetaTrader 5/terminal64.exe" \
+    MT5_STARTUP_EXPERT="RestGateway" \
+    PORT=5000 \
+    HOST=0.0.0.0 \
+    THREADS=4 \
+    MT5_STARTUP_TIMEOUT=90 \
+    MT5_GATEWAY_HOST=127.0.0.1 \
+    MT5_GATEWAY_PORT=22347 \
+    MT5_GATEWAY_TIMEOUT=10.0
 
 EXPOSE 5000
 
