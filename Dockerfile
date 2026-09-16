@@ -81,9 +81,9 @@ RUN Xvfb :99 -screen 0 1024x768x16 >/dev/null 2>&1 & XPID=$! \
     && wineserver -w \
     && echo "==> [2/3] Executando instalador do MetaTrader 5..." \
     && (wine /opt/setup/mt5setup.exe /auto &) \
-    && for i in $(seq 1 45); do \
+    && for i in $(seq 1 60); do \
         [ -f "/opt/wine-template/drive_c/Program Files/MetaTrader 5/terminal64.exe" ] && break; \
-        sleep 2; \
+        sleep 10; \
     done \
     && wineserver -w \
     && echo "==> [3/3] Compilando MQL5 RestGateway Expert Advisor..." \
