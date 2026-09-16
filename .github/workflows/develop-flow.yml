@@ -67,8 +67,8 @@ jobs:
         with:
           context: .
           platforms: linux/amd64
+          pull: true
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha,scope=v-branches
-          cache-to: type=gha,scope=v-branches
+          cache-from: type=registry,ref=liberatti/mt5bridge:latest
