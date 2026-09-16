@@ -110,14 +110,15 @@ COPY --chown=mt5user:mt5group entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 
-# Restaurar variáveis para o runtime
-ENV WINEPREFIX=/home/mt5user/.mt5 \
+# Runtime environment variables
+ENV HOME=/home/mt5user \
+    WINEPREFIX=/home/mt5user/.mt5 \
     WINEDEBUG=-all \
     WINEDLLOVERRIDES="mscoree,mshtml=" \
+    WINEARCH=win64 \
     DISPLAY=:0 \
-    SCREEN_RESOLUTION=1280x1024x24
-
-ENV MT5_PORTABLE=1 \
+    SCREEN_RESOLUTION=1280x1024x24 \
+    MT5_PORTABLE=1 \
     MT5_PATH="C:/Program Files/MetaTrader 5/terminal64.exe" \
     MT5_STARTUP_EXPERT="RestGateway" \
     PORT=5000 \

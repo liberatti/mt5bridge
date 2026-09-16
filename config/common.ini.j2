@@ -18,7 +18,8 @@ AllowLiveTrading={{ MT5_ALLOW_LIVE_TRADING | default(1) }}
 AllowDllImport={{ MT5_ALLOW_DLL_IMPORT | default(1) }}
 Enabled={{ MT5_EXPERTS_ENABLED | default(1) }}
 
-[Startup]
-Expert={{ MT5_STARTUP_EXPERT | default('RestGateway') }}
+[StartUp]
+Expert={{ MT5_STARTUP_EXPERT | default('RestGateway.ex5') }}
 Symbol={{ MT5_STARTUP_SYMBOL | default('EURUSD') }}
 Period={{ MT5_STARTUP_PERIOD | default('H1') }}
+

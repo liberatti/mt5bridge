@@ -14,19 +14,6 @@ fi
 # Running as non-root user (mt5user)
 # ========================================================
 
-export HOME=/home/mt5user
-export PATH="/opt/wine-staging/bin:${PATH}"
-export DISPLAY=${DISPLAY:-:0}
-export SCREEN_RESOLUTION=${SCREEN_RESOLUTION:-1280x1024x24}
-export WINEPREFIX=${WINEPREFIX:-/home/mt5user/.mt5}
-export WINEDEBUG=${WINEDEBUG:--all}
-export WINEDLLOVERRIDES="mscoree,mshtml="
-export WINEARCH=win64
-
-export MT5_PORTABLE=${MT5_PORTABLE:-1}
-export MT5_PATH=${MT5_PATH:-"C:\\Program Files\\MetaTrader 5\\terminal64.exe"}
-export MT5_TIMEOUT=${MT5_TIMEOUT:-20000}
-
 MT5_DIR="${WINEPREFIX}/drive_c/Program Files/MetaTrader 5"
 
 echo "========================================================"
@@ -104,14 +91,25 @@ if [ -f "$MT5_DIR/terminal64.exe" ]; then
         done
     fi
 
-    # Continuous watchdog to dismiss modal first-use dialogs in Xvfb
+    # Render Jinja2 template for default chart template (default.tpl)
+    mkdir -p "$MT5_DIR/Profiles/Templates" "$MT5_DIR/MQL5/Profiles/Templates" "$MT5_DIR/templates"
+    if [ -f "/opt/setup/config/default.tpl.j2" ]; then
+        python3 /home/mt5user/api/utils/template.py "/opt/setup/config/default.tpl.j2" "$MT5_DIR/Profiles/Templates/default.tpl"
+        cp "$MT5_DIR/Profiles/Templates/default.tpl" "$MT5_DIR/MQL5/Profiles/Templates/default.tpl" 2>/dev/null || true
+        cp "$MT5_DIR/Profiles/Templates/default.tpl" "$MT5_DIR/templates/default.tpl" 2>/dev/null || true
+    fi
+
+    # Dismiss initial "Open an Account" wizard dialog if it pops up on startup
     (
-        while true; do
-            sleep 2
-            if command -v xdotool >/dev/null 2>&1; then
+        sleep 5
+        if command -v xdotool >/dev/null 2>&1; then
+            WID=$(xdotool search --name "Open an account" 2>/dev/null | head -n 1 || true)
+            if [ -n "$WID" ]; then
+                xdotool key --window "$WID" Escape 2>/dev/null || true
+            else
                 xdotool key Escape 2>/dev/null || true
             fi
-        done
+        fi
     ) &
     WATCHDOG_PID=$!
 

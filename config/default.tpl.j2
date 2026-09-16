@@ -1,0 +1,12 @@
+<chart>
+symbol={{ MT5_STARTUP_SYMBOL | default('EURUSD') }}
+period=60
+<expert>
+name={{ MT5_STARTUP_EXPERT_NAME | default('RestGateway') }}
+flags=339
+window_num=0
+<inputs>
+InpPort={{ MT5_GATEWAY_PORT | default(22347) }}
+</inputs>
+</expert>
+</chart>

@@ -22,3 +22,14 @@ def render_template(template_path: str, output_path: str, context: dict = None) 
 
 
 render = render_template
+
+
+if __name__ == "__main__":
+    import sys
+
+    if len(sys.argv) < 3:
+        print("Usage: python3 template.py <template_path> <output_path>")
+        sys.exit(1)
+
+    render_template(sys.argv[1], sys.argv[2])
+
