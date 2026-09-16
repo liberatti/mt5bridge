@@ -24,6 +24,8 @@ def create_app() -> Flask:
         Flask: Fully configured Flask application instance.
     """
     app = Flask(__name__, template_folder="templates")
+    app.config["SECURITY_ENABLED"] = os.environ.get("SECURITY_ENABLED", "true")
+    app.config["API_KEY"] = os.environ.get("API_KEY", "")
     LoggingManager(app)
     CORS(app)
 

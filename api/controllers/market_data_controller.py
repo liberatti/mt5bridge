@@ -1,5 +1,9 @@
 from flask import Blueprint, request
-from nxcore.controllers.base_controller import response_data, response_error
+from nxcore.controllers.base_controller import (
+    has_any_authority,
+    response_data,
+    response_error,
+)
 from services.market_data_service import MarketDataService
 
 market_data_bp = Blueprint("market_data", __name__)
@@ -7,6 +11,7 @@ service = MarketDataService()
 
 
 @market_data_bp.route("/copy_rates_from", methods=["GET"])
+@has_any_authority(_internal=True)
 def api_copy_rates_from():
     """
     Get historical candle rates starting backwards from a specified datetime.
@@ -43,6 +48,7 @@ def api_copy_rates_from():
 
 
 @market_data_bp.route("/copy_rates_from_pos", methods=["GET"])
+@has_any_authority(_internal=True)
 def api_copy_rates_from_pos():
     """
     Get historical candle rates starting backwards from an index position offset.
@@ -78,6 +84,7 @@ def api_copy_rates_from_pos():
 
 
 @market_data_bp.route("/copy_rates_range", methods=["GET"])
+@has_any_authority(_internal=True)
 def api_copy_rates_range():
     """
     Get historical candle rates within a specific datetime range.
@@ -114,6 +121,7 @@ def api_copy_rates_range():
 
 
 @market_data_bp.route("/copy_ticks_from", methods=["GET"])
+@has_any_authority(_internal=True)
 def api_copy_ticks_from():
     """
     Get raw price ticks starting backwards from a specified datetime.
@@ -143,6 +151,7 @@ def api_copy_ticks_from():
 
 
 @market_data_bp.route("/copy_ticks_range", methods=["GET"])
+@has_any_authority(_internal=True)
 def api_copy_ticks_range():
     """
     Get raw price ticks within a specific datetime range.

@@ -1,5 +1,6 @@
 from flask import Blueprint, request
 from nxcore.controllers.base_controller import (
+    has_any_authority,
     response_data,
     response_error,
 )
@@ -10,6 +11,7 @@ service = TradeService()
 
 
 @trade_bp.route("/order_check", methods=["POST"])
+@has_any_authority(_internal=True)
 def api_order_check():
     """
     Simulate and check trading order validity and margin adequacy before dispatching to the broker.
@@ -26,6 +28,7 @@ def api_order_check():
 
 
 @trade_bp.route("/order_send", methods=["POST"])
+@has_any_authority(_internal=True)
 def api_order_send():
     """
     Send raw trade transaction request directly to the broker server.
@@ -42,6 +45,7 @@ def api_order_send():
 
 
 @trade_bp.route("/order_calc_margin", methods=["POST"])
+@has_any_authority(_internal=True)
 def api_order_calc_margin():
     """
     Calculate the required margin in the account currency for a proposed order.
@@ -70,6 +74,7 @@ def api_order_calc_margin():
 
 
 @trade_bp.route("/order_calc_profit", methods=["POST"])
+@has_any_authority(_internal=True)
 def api_order_calc_profit():
     """
     Calculate the projected profit/loss in the account currency for an order.
@@ -106,6 +111,7 @@ def api_order_calc_profit():
 
 
 @trade_bp.route("/orders_total", methods=["GET"])
+@has_any_authority(_internal=True)
 def api_orders_total():
     """
     Get the total number of currently active pending orders.
@@ -117,6 +123,7 @@ def api_orders_total():
 
 
 @trade_bp.route("/orders_get", methods=["GET"])
+@has_any_authority(_internal=True)
 def api_orders_get():
     """
     Retrieve active pending orders with optional filtering.
@@ -137,6 +144,7 @@ def api_orders_get():
 
 
 @trade_bp.route("/positions_total", methods=["GET"])
+@has_any_authority(_internal=True)
 def api_positions_total():
     """
     Get the total count of currently open market positions.
@@ -148,6 +156,7 @@ def api_positions_total():
 
 
 @trade_bp.route("/positions_get", methods=["GET"])
+@has_any_authority(_internal=True)
 def api_positions_get():
     """
     Retrieve open market positions with optional filtering.
@@ -168,6 +177,7 @@ def api_positions_get():
 
 
 @trade_bp.route("/order/open", methods=["POST"])
+@has_any_authority(_internal=True)
 def api_order_open():
     """
     High-level helper to open a market or pending order.
@@ -213,6 +223,7 @@ def api_order_open():
 
 
 @trade_bp.route("/order/close", methods=["POST"])
+@has_any_authority(_internal=True)
 def api_order_close():
     """
     High-level helper to close an active open position by ticket.
@@ -241,6 +252,7 @@ def api_order_close():
 
 
 @trade_bp.route("/order/modify", methods=["POST"])
+@has_any_authority(_internal=True)
 def api_order_modify():
     """
     High-level helper to modify Stop Loss (SL) and Take Profit (TP) of an open position.
@@ -265,6 +277,7 @@ def api_order_modify():
 
 
 @trade_bp.route("/order/<int:ticket>", methods=["DELETE"])
+@has_any_authority(_internal=True)
 def api_order_cancel(ticket):
     """
     Cancel an active pending order by ticket ID.

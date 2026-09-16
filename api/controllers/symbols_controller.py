@@ -1,5 +1,9 @@
 from flask import Blueprint, request
-from nxcore.controllers.base_controller import response_data, response_error
+from nxcore.controllers.base_controller import (
+    has_any_authority,
+    response_data,
+    response_error,
+)
 from services.symbols_service import SymbolsService
 
 symbols_bp = Blueprint("symbols", __name__)
@@ -7,6 +11,7 @@ service = SymbolsService()
 
 
 @symbols_bp.route("/symbols_total", methods=["GET"])
+@has_any_authority(_internal=True)
 def api_symbols_total():
     """
     Get the total number of financial instruments available on the MetaTrader 5 server.
@@ -18,6 +23,7 @@ def api_symbols_total():
 
 
 @symbols_bp.route("/symbols_get", methods=["GET"])
+@has_any_authority(_internal=True)
 def api_symbols_get():
     """
     Retrieve list of available instruments with optional wildcard filtering.
@@ -34,6 +40,7 @@ def api_symbols_get():
 
 
 @symbols_bp.route("/symbol_info/<symbol>", methods=["GET"])
+@has_any_authority(_internal=True)
 def api_symbol_info(symbol):
     """
     Get complete instrument specifications and market properties for a specific symbol.
@@ -48,6 +55,7 @@ def api_symbol_info(symbol):
 
 
 @symbols_bp.route("/symbol_info_tick/<symbol>", methods=["GET"])
+@has_any_authority(_internal=True)
 def api_symbol_info_tick(symbol):
     """
     Get the latest market price tick (bid, ask, last, volume, timestamp) for a symbol.
@@ -62,6 +70,7 @@ def api_symbol_info_tick(symbol):
 
 
 @symbols_bp.route("/symbol_select", methods=["POST"])
+@has_any_authority(_internal=True)
 def api_symbol_select():
     """
     Add or remove a symbol to/from the Market Watch window.
@@ -83,6 +92,7 @@ def api_symbol_select():
 
 
 @symbols_bp.route("/market_book_add", methods=["POST"])
+@has_any_authority(_internal=True)
 def api_market_book_add():
     """
     Subscribe to Depth of Market (DOM / Order Book) data for a symbol.
@@ -101,6 +111,7 @@ def api_market_book_add():
 
 
 @symbols_bp.route("/market_book_get/<symbol>", methods=["GET"])
+@has_any_authority(_internal=True)
 def api_market_book_get(symbol):
     """
     Get current Depth of Market (DOM / Order Book) entries for a symbol.
@@ -115,6 +126,7 @@ def api_market_book_get(symbol):
 
 
 @symbols_bp.route("/market_book_release", methods=["POST"])
+@has_any_authority(_internal=True)
 def api_market_book_release():
     """
     Unsubscribe from Depth of Market (DOM / Order Book) data for a symbol.

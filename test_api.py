@@ -44,13 +44,17 @@ def log_error(msg: str):
 
 
 class MT5ApiTester:
-    def __init__(self, base_url: str, symbol: str = "EURUSD", volume: float = 0.01, close_order: bool = True):
+    def __init__(self, base_url: str, symbol: str = "EURUSD", volume: float = 0.01, close_order: bool = True, api_key: str = None):
         self.base_url = base_url.rstrip("/")
         self.symbol = symbol
         self.volume = volume
         self.close_order = close_order
         self.session = requests.Session()
-        self.session.headers.update({"Content-Type": "application/json", "Accept": "application/json"})
+        headers = {"Content-Type": "application/json", "Accept": "application/json"}
+        api_key = api_key or os.environ.get("API_KEY")
+        if api_key:
+            headers["x-api-key"] = api_key
+        self.session.headers.update(headers)
 
     def _request(self, method: str, endpoint: str, data: dict = None, params: dict = None):
         url = f"{self.base_url}{endpoint}"
@@ -524,9 +528,10 @@ def main():
     parser.add_argument("--symbol", default="EURUSD", help="Trading symbol (default: EURUSD)")
     parser.add_argument("--volume", type=float, default=0.01, help="Lot volume for test trade (default: 0.01)")
     parser.add_argument("--no-close", action="store_true", help="Do not close the test positions after opening")
+    parser.add_argument("--api-key", default=os.environ.get("API_KEY", ""), help="API key for x-api-key authentication")
 
     args = parser.parse_args()
-    tester = MT5ApiTester(base_url=args.url, symbol=args.symbol, volume=args.volume, close_order=not args.no_close)
+    tester = MT5ApiTester(base_url=args.url, symbol=args.symbol, volume=args.volume, close_order=not args.no_close, api_key=args.api_key)
     sys.exit(tester.run_all())
 
 

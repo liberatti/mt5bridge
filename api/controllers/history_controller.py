@@ -1,5 +1,5 @@
 from flask import Blueprint, request
-from nxcore.controllers.base_controller import response_data
+from nxcore.controllers.base_controller import has_any_authority, response_data
 from services.history_service import HistoryService
 
 history_bp = Blueprint("history", __name__)
@@ -7,6 +7,7 @@ service = HistoryService()
 
 
 @history_bp.route("/history_orders_total", methods=["GET"])
+@has_any_authority(_internal=True)
 def api_history_orders_total():
     """
     Get the total number of orders in trading history within an optional date range.
@@ -24,6 +25,7 @@ def api_history_orders_total():
 
 
 @history_bp.route("/history_orders_get", methods=["GET"])
+@has_any_authority(_internal=True)
 def api_history_orders_get():
     """
     Retrieve historical closed or canceled orders matching filter criteria.
@@ -54,6 +56,7 @@ def api_history_orders_get():
 
 
 @history_bp.route("/history_deals_total", methods=["GET"])
+@has_any_authority(_internal=True)
 def api_history_deals_total():
     """
     Get the total number of executed deals (trades) in history within an optional date range.
@@ -71,6 +74,7 @@ def api_history_deals_total():
 
 
 @history_bp.route("/history_deals_get", methods=["GET"])
+@has_any_authority(_internal=True)
 def api_history_deals_get():
     """
     Retrieve historical executed trade deals matching filter criteria.
