@@ -170,4 +170,3 @@ class MarketDataService(BaseService):
         if ticks is None:
             raise RuntimeError(f"copy_ticks_range failed: {mt5.last_error()}")
         return format_ticks(ticks)
-

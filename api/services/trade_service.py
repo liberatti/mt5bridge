@@ -439,4 +439,3 @@ class TradeService(BaseService):
         if res.retcode != mt5.TRADE_RETCODE_DONE:
             raise RuntimeError(f"Cancel rejected (retcode {res.retcode}): {res.comment}")
         return res._asdict()
-

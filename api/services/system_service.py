@@ -63,4 +63,3 @@ class SystemService(BaseService):
         if info is None:
             raise RuntimeError(f"Failed to get account info: {mt5.last_error()}")
         return info._asdict()
-

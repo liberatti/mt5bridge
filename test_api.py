@@ -171,7 +171,7 @@ class MT5ApiTester:
         log_success(f"Tick {self.symbol} -> Bid: {bid} | Ask: {ask} | Timestamp: {time_tick}")
 
         # Depth of Market (DOM)
-        log_info(f"Subscribing to Depth of Market (/api/market_book_add)...")
+        log_info("Subscribing to Depth of Market (/api/market_book_add)...")
         self._request("POST", "/api/market_book_add", data={"symbol": self.symbol})
         log_success(f"Subscribed to DOM for {self.symbol}")
 
@@ -181,7 +181,7 @@ class MT5ApiTester:
         entries_count = len(book_data) if isinstance(book_data, list) else 0
         log_success(f"DOM Entries: {entries_count} depth level(s) retrieved")
 
-        log_info(f"Releasing DOM subscription (/api/market_book_release)...")
+        log_info("Releasing DOM subscription (/api/market_book_release)...")
         self._request("POST", "/api/market_book_release", data={"symbol": self.symbol})
         log_success(f"DOM subscription released for {self.symbol}")
 

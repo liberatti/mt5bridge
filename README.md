@@ -116,6 +116,7 @@ services:
       - MT5_SERVER=MetaQuotes-Demo
       - MT5_STARTUP_SYMBOL=EURUSD
       - MT5_STARTUP_PERIOD=H1
+      - API_KEY=YourSecretApiKey
     volumes:
       - mt5_data:/home/mt5user/.mt5
 ```
@@ -139,8 +140,11 @@ Once running, navigate to [`http://localhost:5000/`](http://localhost:5000/) to 
 | `MT5_INVESTOR` | `""` | Investor (read-only) password (optional) |
 | `MT5_STARTUP_SYMBOL` | `EURUSD` | Default chart symbol initialized on startup |
 | `MT5_STARTUP_PERIOD` | `H1` | Default chart timeframe (`M1`, `M5`, `M15`, `H1`, `D1`, etc.) |
+| `SECURITY_ENABLED` | `true` | Enables or disables API authentication verification |
+| `API_KEY` | `""` | Secret API key required in `x-api-key` HTTP request header |
 | `PORT` | `5000` | HTTP port exposed by the REST API |
 | `HOST` | `0.0.0.0` | Bind host for Flask/Waitress server |
+| `LOGLEVEL` | `INFO` | Application log level (`DEBUG`, `INFO`, `WARNING`, `ERROR`) |
 | `THREADS` | `8` | Worker threads for Waitress WSGI production server |
 | `MT5_STARTUP_TIMEOUT`| `90` | Max seconds to wait for MT5 & EA gateway startup |
 | `SCREEN_RESOLUTION` | `1024x768x24` | Resolution for virtual framebuffer display (Xvfb) |
@@ -245,20 +249,23 @@ All responses follow a consistent `nxcore` structure:
 ### Python Example (`requests`)
 
 ```python
+import os
 import requests
 
 BASE_URL = "http://localhost:5000/api"
+API_KEY = os.environ.get("API_KEY", "YourSecretApiKey")
+HEADERS = {"x-api-key": API_KEY}
 
 # 1. Check account balance & equity
-account = requests.get(f"{BASE_URL}/account_info").json()
+account = requests.get(f"{BASE_URL}/account_info", headers=HEADERS).json()
 print("Balance:", account["data"]["balance"], "Equity:", account["data"]["equity"])
 
 # 2. Get real-time price tick
-tick = requests.get(f"{BASE_URL}/symbol_info_tick/EURUSD").json()
+tick = requests.get(f"{BASE_URL}/symbol_info_tick/EURUSD", headers=HEADERS).json()
 print("EURUSD Bid:", tick["data"]["bid"], "Ask:", tick["data"]["ask"])
 
 # 3. Open a Market Buy Position
-buy_res = requests.post(f"{BASE_URL}/order/open", json={
+buy_res = requests.post(f"{BASE_URL}/order/open", headers=HEADERS, json={
     "symbol": "EURUSD",
     "order_type": "BUY",
     "volume": 0.01,
@@ -269,7 +276,7 @@ buy_res = requests.post(f"{BASE_URL}/order/open", json={
 print("Order Response:", buy_res)
 
 # 4. List open positions
-positions = requests.get(f"{BASE_URL}/positions_get").json()
+positions = requests.get(f"{BASE_URL}/positions_get", headers=HEADERS).json()
 print("Open Positions:", positions["data"])
 ```
 
@@ -277,14 +284,17 @@ print("Open Positions:", positions["data"])
 
 ```bash
 # Get MT5 version
-curl -X GET "http://localhost:5000/api/version"
+curl -X GET "http://localhost:5000/api/version" \
+  -H "x-api-key: YourSecretApiKey"
 
 # Get EURUSD live tick
-curl -X GET "http://localhost:5000/api/symbol_info_tick/EURUSD"
+curl -X GET "http://localhost:5000/api/symbol_info_tick/EURUSD" \
+  -H "x-api-key: YourSecretApiKey"
 
 # Open Market Buy Order (0.01 lots)
 curl -X POST "http://localhost:5000/api/order/open" \
   -H "Content-Type: application/json" \
+  -H "x-api-key: YourSecretApiKey" \
   -d '{
     "symbol": "EURUSD",
     "order_type": "BUY",
@@ -308,12 +318,17 @@ curl -X POST "http://localhost:5000/api/order/open" \
 The repository includes an automated integration test script (`test_api.py`) that validates the complete API lifecycle, tests all endpoint categories, and performs a live test trade:
 
 ```bash
-# Run the test suite against the running container
+# Run the test suite with API Key authentication
+python test_api.py --url http://localhost:5000 --api-key "YourSecretApiKey" --symbol EURUSD --volume 0.01
+
+# Or authenticate using environment variable
+export API_KEY="YourSecretApiKey"
 python test_api.py --url http://localhost:5000 --symbol EURUSD --volume 0.01
 ```
 
 Available arguments:
 - `--url`: Base URL of the running API (default: `http://localhost:5000` or `API_URL` env).
+- `--api-key`: API key sent in the `x-api-key` header (default: `API_KEY` env or empty).
 - `--symbol`: Symbol used for test orders and data retrieval (default: `EURUSD`).
 - `--volume`: Trading lot size (default: `0.01`).
 - `--no-close`: Keeps the test position open instead of automatically closing it.

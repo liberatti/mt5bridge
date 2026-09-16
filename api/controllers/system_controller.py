@@ -52,4 +52,3 @@ def api_account_info():
         Response: Standardized JSON with full account info dictionary.
     """
     return response_data(service.account_info())
-

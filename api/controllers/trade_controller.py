@@ -290,4 +290,3 @@ def api_order_cancel(ticket):
     """
     res = service.cancel_order(ticket=ticket)
     return response_data(res)
-

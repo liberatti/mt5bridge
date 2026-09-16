@@ -102,4 +102,3 @@ def api_history_deals_get():
         position=position,
     )
     return response_data({"count": len(deals), "deals": deals})
-

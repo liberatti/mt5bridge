@@ -127,4 +127,3 @@ class BaseService:
             os.environ.get("MT5_PATH", "C:/Program Files/MetaTrader 5/terminal64.exe")
         )
         raise RuntimeError(f"MT5 Gateway initialization failed: {last_err}")
-

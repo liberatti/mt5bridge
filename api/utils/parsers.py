@@ -255,4 +255,3 @@ def format_ticks(ticks: Optional[List[Any]]) -> List[Dict[str, Any]]:
             }
         )
     return res
-

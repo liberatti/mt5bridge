@@ -32,4 +32,3 @@ def make_response(
     if message is not None:
         return response_ok(message)
     return response_ok("Success")
-

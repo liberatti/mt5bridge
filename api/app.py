@@ -6,6 +6,8 @@ from flask import Flask
 from flask_cors import CORS
 from werkzeug.exceptions import HTTPException
 
+import config
+import nxcore.config as nxcore_config
 from nxcore.middleware.logging_manager import LoggingManager
 from nxcore.controllers.base_controller import response_error, response_error_500
 from routes import register_routes
@@ -23,9 +25,19 @@ def create_app() -> Flask:
     Returns:
         Flask: Fully configured Flask application instance.
     """
+    nxcore_config.init(
+        {
+            "LOGLEVEL": config.LOGLEVEL,
+            "JWT_SECRET_KEY": config.JWT_SECRET_KEY,
+            "JWT_AUD": config.JWT_AUD,
+            "SECURITY_ENABLED": config.SECURITY_ENABLED,
+            "API_KEY": config.API_KEY,
+        }
+    )
+
     app = Flask(__name__, template_folder="templates")
-    app.config["SECURITY_ENABLED"] = os.environ.get("SECURITY_ENABLED", "true")
-    app.config["API_KEY"] = os.environ.get("API_KEY", "")
+    app.config["SECURITY_ENABLED"] = config.SECURITY_ENABLED
+    app.config["API_KEY"] = config.API_KEY
     LoggingManager(app)
     CORS(app)
 
@@ -47,14 +59,16 @@ def create_app() -> Flask:
         try:
             time.sleep(1)
             from services.base_service import BaseService
+
             BaseService.ensure_initialized()
         except Exception as e:
-            logger.warning("MetaTrader 5 background auto-initialization deferred: %s", e)
+            logger.warning(
+                "MetaTrader 5 background auto-initialization deferred: %s", e
+            )
 
     threading.Thread(target=_bg_init, daemon=True).start()
 
     return app
-
 
 
 # WSGI application instance (for Gunicorn / Waitress / uWSGI)
@@ -65,11 +79,17 @@ if __name__ == "__main__":
     host = os.environ.get("HOST", "0.0.0.0")
     threads = int(os.environ.get("THREADS", 8))
 
-    logger.info("Starting MetaTrader 5 REST API on %s:%s (threads=%d)", host, port, threads)
+    logger.info(
+        "Starting MetaTrader 5 REST API on %s:%s (threads=%d)", host, port, threads
+    )
 
     try:
         from waitress import serve
-        logger.info("Using Waitress WSGI multi-threaded production server (%d worker threads)", threads)
+
+        logger.info(
+            "Using Waitress WSGI multi-threaded production server (%d worker threads)",
+            threads,
+        )
         serve(
             app,
             host=host,

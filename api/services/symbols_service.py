@@ -148,4 +148,3 @@ class SymbolsService(BaseService):
         self.ensure_initialized()
         res = mt5.market_book_release(symbol)
         return {"symbol": symbol, "released": bool(res)}
-

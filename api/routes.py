@@ -83,8 +83,6 @@ def register_routes(app):
             templates_dir, "icon.svg", mimetype="image/svg+xml"
         )
 
-
-
     # 3. Register Blueprints with URL prefix /api
     app.register_blueprint(system_bp, url_prefix="/api")
     app.register_blueprint(symbols_bp, url_prefix="/api")
