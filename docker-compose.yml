@@ -1,0 +1,23 @@
+volumes:
+  mt5_data:
+    driver: local
+
+services:
+  metatrader5:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: liberatti/mt5bridge:latest
+    ports:
+      - "5000:5000"
+    environment:
+      - MT5_STARTUP_SYMBOL=EURUSD
+      - MT5_STARTUP_PERIOD=H1
+      - MT5_LOGIN=xxxxx
+      - MT5_PASSWORD=xxxxx
+      - MT5_SERVER=MetaQuotes-Demo
+      - MT5_INVESTOR=xxxxx
+      #- SECURITY_ENABLED=false
+      - API_KEY=xxxxx
+    volumes:
+      - mt5_data:/home/mt5user/.mt5

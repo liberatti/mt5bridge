@@ -1,0 +1,1606 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "MetaTrader 5 Flask REST API",
+    "description": "Comprehensive REST API exposing 100% of the official Python MetaTrader 5 library methods in a headless Wine container.\n\n### Modules\n- **System**: MT5 lifecycle, connection, login, terminal and account status.\n- **Symbols & DOM**: Symbol listings, specifications, real-time ticks, and Depth of Market.\n- **Market Data**: Historical rates (OHLCV) and ticks with flexible filtering.\n- **Trading**: Market/pending order execution, positions management, margin & profit calculators.\n- **History**: Closed orders and deals history with date and ticket filters.",
+    "version": "1.0.0",
+    "contact": {
+      "name": "API Support"
+    }
+  },
+  "servers": [
+    {
+      "url": "/",
+      "description": "Local API Server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "System",
+      "description": "Terminal initialization, account authentication, and diagnostic endpoints"
+    },
+    {
+      "name": "Symbols & DOM",
+      "description": "Symbol search, detailed specifications, current ticks, and Market Depth"
+    },
+    {
+      "name": "Market Data",
+      "description": "Historical candlestick rates (OHLCV) and tick data retrieval"
+    },
+    {
+      "name": "Trade",
+      "description": "Order placement, position closure/modification, margin and profit calculation"
+    },
+    {
+      "name": "History",
+      "description": "Historical orders and trade deals execution logs"
+    }
+  ],
+  "paths": {
+    "/api/version": {
+      "get": {
+        "tags": [
+          "System"
+        ],
+        "summary": "Get MT5 Terminal Version",
+        "description": "Returns version number, build, and release date of the MetaTrader 5 terminal.",
+        "responses": {
+          "200": {
+            "description": "Version details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/last_error": {
+      "get": {
+        "tags": [
+          "System"
+        ],
+        "summary": "Get Last MT5 Error",
+        "description": "Returns the last error code and error description from the MetaTrader 5 API.",
+        "responses": {
+          "200": {
+            "description": "Last error details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/terminal_info": {
+      "get": {
+        "tags": [
+          "System"
+        ],
+        "summary": "Get Terminal Info",
+        "description": "Returns detailed status and settings of the connected MetaTrader 5 terminal.",
+        "responses": {
+          "200": {
+            "description": "Terminal information",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/account_info": {
+      "get": {
+        "tags": [
+          "System"
+        ],
+        "summary": "Get Account Info",
+        "description": "Returns trading account status, balance, equity, margin, leverage, profit, and currency.",
+        "responses": {
+          "200": {
+            "description": "Account details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/symbols_total": {
+      "get": {
+        "tags": [
+          "Symbols & DOM"
+        ],
+        "summary": "Get Total Number of Symbols",
+        "description": "Returns the total number of available financial instruments in the terminal.",
+        "responses": {
+          "200": {
+            "description": "Symbols count",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/symbols_get": {
+      "get": {
+        "tags": [
+          "Symbols & DOM"
+        ],
+        "summary": "Get Symbols List",
+        "description": "Returns list of symbols with specifications. Can filter by group pattern (e.g. `*USD*`, `EUR*`, `*crypto*`).",
+        "parameters": [
+          {
+            "name": "group",
+            "in": "query",
+            "description": "Group filter pattern",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "*"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of symbols",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/symbol_info/{symbol}": {
+      "get": {
+        "tags": [
+          "Symbols & DOM"
+        ],
+        "summary": "Get Symbol Info",
+        "description": "Returns complete financial instrument properties (point size, spread, digits, contract size, trade modes, margin rates).",
+        "parameters": [
+          {
+            "name": "symbol",
+            "in": "path",
+            "required": true,
+            "description": "Symbol name (e.g., EURUSD, BTCUSD)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Symbol specifications",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/symbol_info_tick/{symbol}": {
+      "get": {
+        "tags": [
+          "Symbols & DOM"
+        ],
+        "summary": "Get Symbol Current Tick",
+        "description": "Returns the most recent price tick (bid, ask, last, volume, time) for the specified symbol.",
+        "parameters": [
+          {
+            "name": "symbol",
+            "in": "path",
+            "required": true,
+            "description": "Symbol name",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Latest tick data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/symbol_select": {
+      "post": {
+        "tags": [
+          "Symbols & DOM"
+        ],
+        "summary": "Select/Deselect Symbol in MarketWatch",
+        "description": "Adds or removes a symbol from the Market Watch window.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SymbolSelectRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Selection result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/market_book_add": {
+      "post": {
+        "tags": [
+          "Symbols & DOM"
+        ],
+        "summary": "Subscribe to Depth of Market (DOM)",
+        "description": "Subscribes the terminal to market book events for the symbol.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MarketBookRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Subscription status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/market_book_get/{symbol}": {
+      "get": {
+        "tags": [
+          "Symbols & DOM"
+        ],
+        "summary": "Get Depth of Market (DOM) Snapshots",
+        "description": "Returns an array of DOM entries (buy/sell orders, prices, and volumes) for a subscribed symbol.",
+        "parameters": [
+          {
+            "name": "symbol",
+            "in": "path",
+            "required": true,
+            "description": "Symbol name",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "DOM entries list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/market_book_release": {
+      "post": {
+        "tags": [
+          "Symbols & DOM"
+        ],
+        "summary": "Unsubscribe from Depth of Market (DOM)",
+        "description": "Cancels subscription to market book events for the symbol.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MarketBookRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Unsubscription status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/copy_rates_from": {
+      "get": {
+        "tags": [
+          "Market Data"
+        ],
+        "summary": "Copy Rates From Date",
+        "description": "Returns historical bars starting from a specified date backward/forward.",
+        "parameters": [
+          {
+            "name": "symbol",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "EURUSD"
+            }
+          },
+          {
+            "name": "timeframe",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "M1",
+              "enum": [
+                "M1",
+                "M2",
+                "M3",
+                "M4",
+                "M5",
+                "M6",
+                "M10",
+                "M12",
+                "M15",
+                "M20",
+                "M30",
+                "H1",
+                "H2",
+                "H3",
+                "H4",
+                "H6",
+                "H8",
+                "H12",
+                "D1",
+                "W1",
+                "MN1"
+              ]
+            }
+          },
+          {
+            "name": "date_from",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "2026-01-01T00:00:00Z"
+            }
+          },
+          {
+            "name": "count",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Candlestick rates list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/copy_rates_from_pos": {
+      "get": {
+        "tags": [
+          "Market Data"
+        ],
+        "summary": "Copy Rates From Position (Index)",
+        "description": "Returns historical bars starting from an index offset (`start_pos=0` is current open candle).",
+        "parameters": [
+          {
+            "name": "symbol",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "EURUSD"
+            }
+          },
+          {
+            "name": "timeframe",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "M1"
+            }
+          },
+          {
+            "name": "start_pos",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0
+            }
+          },
+          {
+            "name": "count",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Candlestick rates list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/copy_rates_range": {
+      "get": {
+        "tags": [
+          "Market Data"
+        ],
+        "summary": "Copy Rates in Date Range",
+        "description": "Returns historical bars within a specific start and end date range.",
+        "parameters": [
+          {
+            "name": "symbol",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "EURUSD"
+            }
+          },
+          {
+            "name": "timeframe",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "M1"
+            }
+          },
+          {
+            "name": "date_from",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "2026-01-01T00:00:00Z"
+            }
+          },
+          {
+            "name": "date_to",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "2026-01-02T00:00:00Z"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Candlestick rates list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/copy_ticks_from": {
+      "get": {
+        "tags": [
+          "Market Data"
+        ],
+        "summary": "Copy Ticks From Date",
+        "description": "Returns tick history starting from a specified date.",
+        "parameters": [
+          {
+            "name": "symbol",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "EURUSD"
+            }
+          },
+          {
+            "name": "date_from",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "2026-01-01T00:00:00Z"
+            }
+          },
+          {
+            "name": "count",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 100
+            }
+          },
+          {
+            "name": "flags",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "ALL",
+              "enum": [
+                "ALL",
+                "INFO",
+                "TRADE"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ticks list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/copy_ticks_range": {
+      "get": {
+        "tags": [
+          "Market Data"
+        ],
+        "summary": "Copy Ticks in Date Range",
+        "description": "Returns tick history within a start and end datetime range.",
+        "parameters": [
+          {
+            "name": "symbol",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "EURUSD"
+            }
+          },
+          {
+            "name": "date_from",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "2026-01-01T00:00:00Z"
+            }
+          },
+          {
+            "name": "date_to",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "2026-01-02T00:00:00Z"
+            }
+          },
+          {
+            "name": "flags",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "ALL",
+              "enum": [
+                "ALL",
+                "INFO",
+                "TRADE"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ticks list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/order/open": {
+      "post": {
+        "tags": [
+          "Trade"
+        ],
+        "summary": "Open Market or Pending Order",
+        "description": "Simplified high-level endpoint to place BUY, SELL, or pending limit/stop orders with SL and TP.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderOpenRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Order execution result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation or execution error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/order/close": {
+      "post": {
+        "tags": [
+          "Trade"
+        ],
+        "summary": "Close Position",
+        "description": "Closes an open position fully or partially by ticket ID.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderCloseRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Position closure result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/order/modify": {
+      "post": {
+        "tags": [
+          "Trade"
+        ],
+        "summary": "Modify Position SL/TP",
+        "description": "Updates the Stop Loss and Take Profit levels of an open position.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderModifyRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Position modification result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/order/{ticket}": {
+      "delete": {
+        "tags": [
+          "Trade"
+        ],
+        "summary": "Cancel Pending Order",
+        "description": "Deletes/cancels an active pending order by its ticket ID.",
+        "parameters": [
+          {
+            "name": "ticket",
+            "in": "path",
+            "required": true,
+            "description": "Order ticket ID",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Cancellation result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/order_send": {
+      "post": {
+        "tags": [
+          "Trade"
+        ],
+        "summary": "Send Raw MT5 Order Request",
+        "description": "Directly sends an official MqlTradeRequest dictionary to MT5 via `order_send`.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderSendRawRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Raw order result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/order_check": {
+      "post": {
+        "tags": [
+          "Trade"
+        ],
+        "summary": "Check Order Pre-Execution",
+        "description": "Validates account margin, funds, and parameters for an order without sending it to the market.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderSendRawRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Order check result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/order_calc_margin": {
+      "post": {
+        "tags": [
+          "Trade"
+        ],
+        "summary": "Calculate Required Margin",
+        "description": "Calculates the margin required to open a trade of specified type, symbol, volume, and price.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderCalcMarginRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Calculated margin amount",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/order_calc_profit": {
+      "post": {
+        "tags": [
+          "Trade"
+        ],
+        "summary": "Calculate Expected Profit",
+        "description": "Calculates profit/loss in account currency for specified opening and closing prices.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderCalcProfitRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Calculated profit amount",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/positions_total": {
+      "get": {
+        "tags": [
+          "Trade"
+        ],
+        "summary": "Get Total Number of Open Positions",
+        "description": "Returns the number of currently open positions.",
+        "responses": {
+          "200": {
+            "description": "Positions count",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/positions_get": {
+      "get": {
+        "tags": [
+          "Trade"
+        ],
+        "summary": "Get Open Positions List",
+        "description": "Returns array of active open positions. Can filter by symbol, group pattern, or position ticket.",
+        "parameters": [
+          {
+            "name": "symbol",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "group",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ticket",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Open positions list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/orders_total": {
+      "get": {
+        "tags": [
+          "Trade"
+        ],
+        "summary": "Get Total Number of Pending Orders",
+        "description": "Returns the count of active pending orders.",
+        "responses": {
+          "200": {
+            "description": "Orders count",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/orders_get": {
+      "get": {
+        "tags": [
+          "Trade"
+        ],
+        "summary": "Get Active Pending Orders List",
+        "description": "Returns list of active pending orders. Can filter by symbol, group, or ticket.",
+        "parameters": [
+          {
+            "name": "symbol",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "group",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ticket",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Orders list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/history_orders_total": {
+      "get": {
+        "tags": [
+          "History"
+        ],
+        "summary": "Get Total Historical Orders Count",
+        "description": "Returns count of closed/cancelled orders within the given time range.",
+        "parameters": [
+          {
+            "name": "date_from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2026-01-01T00:00:00Z"
+            }
+          },
+          {
+            "name": "date_to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2026-01-31T23:59:59Z"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Historical orders count",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/history_orders_get": {
+      "get": {
+        "tags": [
+          "History"
+        ],
+        "summary": "Get Historical Orders",
+        "description": "Returns list of historical orders filtered by date range, group, order ticket, or position ticket.",
+        "parameters": [
+          {
+            "name": "date_from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "date_to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "group",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ticket",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "position",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Historical orders list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/history_deals_total": {
+      "get": {
+        "tags": [
+          "History"
+        ],
+        "summary": "Get Total Historical Deals Count",
+        "description": "Returns count of trade execution deals in history within the time window.",
+        "parameters": [
+          {
+            "name": "date_from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "date_to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Historical deals count",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/history_deals_get": {
+      "get": {
+        "tags": [
+          "History"
+        ],
+        "summary": "Get Historical Deals (Fills & Closed Trades)",
+        "description": "Returns list of executed deals with entry/exit prices, commission, swap, and realized profit.",
+        "parameters": [
+          {
+            "name": "date_from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "date_to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "group",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ticket",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "position",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Historical deals list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ApiResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "example": 200
+          },
+          "data": {
+            "type": "object",
+            "nullable": true
+          }
+        }
+      },
+      "ApiErrorResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "example": 400
+          },
+          "message": {
+            "type": "string",
+            "example": "Bad Request / Validation Error"
+          },
+          "details": {
+            "type": "string",
+            "nullable": true,
+            "example": "Detailed error context"
+          },
+          "url": {
+            "type": "string",
+            "example": "http://localhost:5000/api/..."
+          },
+          "method": {
+            "type": "string",
+            "example": "POST"
+          }
+        }
+      },
+      "SymbolSelectRequest": {
+        "type": "object",
+        "required": [
+          "symbol"
+        ],
+        "properties": {
+          "symbol": {
+            "type": "string",
+            "example": "EURUSD"
+          },
+          "enable": {
+            "type": "boolean",
+            "default": true,
+            "description": "True to add, False to remove"
+          }
+        }
+      },
+      "MarketBookRequest": {
+        "type": "object",
+        "required": [
+          "symbol"
+        ],
+        "properties": {
+          "symbol": {
+            "type": "string",
+            "example": "EURUSD"
+          }
+        }
+      },
+      "OrderOpenRequest": {
+        "type": "object",
+        "required": [
+          "symbol",
+          "volume"
+        ],
+        "properties": {
+          "symbol": {
+            "type": "string",
+            "example": "EURUSD"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "BUY",
+              "SELL",
+              "BUY_LIMIT",
+              "SELL_LIMIT",
+              "BUY_STOP",
+              "SELL_STOP",
+              "BUY_STOP_LIMIT",
+              "SELL_STOP_LIMIT"
+            ],
+            "default": "BUY",
+            "description": "Order type string"
+          },
+          "volume": {
+            "type": "number",
+            "example": 0.01
+          },
+          "price": {
+            "type": "number",
+            "description": "Required for limit/stop orders. Optional for market orders (defaults to current ask/bid)",
+            "example": 1.085
+          },
+          "sl": {
+            "type": "number",
+            "description": "Stop Loss price level",
+            "example": 1.08
+          },
+          "tp": {
+            "type": "number",
+            "description": "Take Profit price level",
+            "example": 1.095
+          },
+          "deviation": {
+            "type": "integer",
+            "default": 20,
+            "description": "Maximum price slippage in points"
+          },
+          "comment": {
+            "type": "string",
+            "default": "API Order"
+          },
+          "magic": {
+            "type": "integer",
+            "default": 0,
+            "description": "Expert Advisor Magic Number ID"
+          },
+          "type_filling": {
+            "type": "integer",
+            "description": "Order execution filling mode (0 = FOK, 1 = IOC, 2 = RETURN, 3 = BOC)",
+            "example": 1
+          }
+        }
+      },
+      "OrderCloseRequest": {
+        "type": "object",
+        "required": [
+          "ticket"
+        ],
+        "properties": {
+          "ticket": {
+            "type": "integer",
+            "description": "Position Ticket ID to close",
+            "example": 1234567
+          },
+          "volume": {
+            "type": "number",
+            "description": "Volume to close (default: closes entire position volume)",
+            "example": 0.01
+          },
+          "deviation": {
+            "type": "integer",
+            "default": 20
+          },
+          "comment": {
+            "type": "string",
+            "default": "API Close"
+          }
+        }
+      },
+      "OrderModifyRequest": {
+        "type": "object",
+        "required": [
+          "ticket"
+        ],
+        "properties": {
+          "ticket": {
+            "type": "integer",
+            "description": "Position Ticket ID",
+            "example": 1234567
+          },
+          "sl": {
+            "type": "number",
+            "description": "New Stop Loss level",
+            "example": 1.082
+          },
+          "tp": {
+            "type": "number",
+            "description": "New Take Profit level",
+            "example": 1.098
+          }
+        }
+      },
+      "OrderSendRawRequest": {
+        "type": "object",
+        "required": [
+          "action",
+          "symbol",
+          "volume",
+          "type"
+        ],
+        "properties": {
+          "action": {
+            "type": "integer",
+            "description": "1 = TRADE_ACTION_DEAL, 5 = TRADE_ACTION_PENDING, 6 = TRADE_ACTION_SLTP, 8 = TRADE_ACTION_REMOVE",
+            "example": 1
+          },
+          "symbol": {
+            "type": "string",
+            "example": "EURUSD"
+          },
+          "volume": {
+            "type": "number",
+            "example": 0.1
+          },
+          "type": {
+            "type": "integer",
+            "description": "0 = ORDER_TYPE_BUY, 1 = ORDER_TYPE_SELL",
+            "example": 0
+          },
+          "price": {
+            "type": "number",
+            "example": 1.085
+          },
+          "sl": {
+            "type": "number",
+            "example": 1.08
+          },
+          "tp": {
+            "type": "number",
+            "example": 1.09
+          },
+          "deviation": {
+            "type": "integer",
+            "example": 20
+          },
+          "magic": {
+            "type": "integer",
+            "example": 10001
+          },
+          "comment": {
+            "type": "string",
+            "example": "Raw trade request"
+          },
+          "type_time": {
+            "type": "integer",
+            "example": 0
+          },
+          "type_filling": {
+            "type": "integer",
+            "example": 1
+          }
+        }
+      },
+      "OrderCalcMarginRequest": {
+        "type": "object",
+        "required": [
+          "action",
+          "symbol",
+          "volume",
+          "price"
+        ],
+        "properties": {
+          "action": {
+            "type": "string",
+            "description": "BUY or SELL (or integer code 0/1)",
+            "example": "BUY"
+          },
+          "symbol": {
+            "type": "string",
+            "example": "EURUSD"
+          },
+          "volume": {
+            "type": "number",
+            "example": 1.0
+          },
+          "price": {
+            "type": "number",
+            "example": 1.085
+          }
+        }
+      },
+      "OrderCalcProfitRequest": {
+        "type": "object",
+        "required": [
+          "action",
+          "symbol",
+          "volume",
+          "price_open",
+          "price_close"
+        ],
+        "properties": {
+          "action": {
+            "type": "string",
+            "description": "BUY or SELL (or integer code 0/1)",
+            "example": "BUY"
+          },
+          "symbol": {
+            "type": "string",
+            "example": "EURUSD"
+          },
+          "volume": {
+            "type": "number",
+            "example": 1.0
+          },
+          "price_open": {
+            "type": "number",
+            "example": 1.08
+          },
+          "price_close": {
+            "type": "number",
+            "example": 1.085
+          }
+        }
+      }
+    }
+  }
+}
