@@ -1,9 +1,9 @@
 from flask import Blueprint, request
 from nxcore.controllers.base_controller import (
-     response_data,
-     response_error,
- )
- from services.trade_service import TradeService
+    response_data,
+    response_error,
+)
+from services.trade_service import TradeService
 
 trade_bp = Blueprint("trade", __name__)
 service = TradeService()
