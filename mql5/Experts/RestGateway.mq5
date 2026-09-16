@@ -323,9 +323,30 @@ string HandleSymbolInfoTick(string json)
    string symbol = ExtractJsonString(json, "symbol");
    if(symbol == "") return "{\"status\":\"error\",\"error\":\"symbol parameter required\"}";
    
+   SymbolSelect(symbol, true);
    MqlTick tick;
    if(!SymbolInfoTick(symbol, tick))
+   {
+      double last = SymbolInfoDouble(symbol, SYMBOL_LAST);
+      double bid  = SymbolInfoDouble(symbol, SYMBOL_BID);
+      double ask  = SymbolInfoDouble(symbol, SYMBOL_ASK);
+      if(last > 0 || bid > 0 || ask > 0)
+      {
+         int digits = (int)SymbolInfoInteger(symbol, SYMBOL_DIGITS);
+         string res = "{\"status\":\"ok\",\"action\":\"symbol_info_tick\",\"data\":{";
+         res += "\"time\":" + (string)(long)TimeCurrent() + ",";
+         res += "\"bid\":" + DoubleToString(bid, digits) + ",";
+         res += "\"ask\":" + DoubleToString(ask, digits) + ",";
+         res += "\"last\":" + DoubleToString(last, digits) + ",";
+         res += "\"volume\":0,";
+         res += "\"time_msc\":" + (string)((long)TimeCurrent() * 1000) + ",";
+         res += "\"flags\":0,";
+         res += "\"volume_real\":0.0";
+         res += "}}";
+         return res;
+      }
       return "{\"status\":\"error\",\"error\":\"Failed to get tick for symbol " + symbol + "\"}";
+   }
       
    int digits = (int)SymbolInfoInteger(symbol, SYMBOL_DIGITS);
    string res = "{\"status\":\"ok\",\"action\":\"symbol_info_tick\",\"data\":{";
@@ -499,15 +520,13 @@ string HandleCopyTicksFrom(string json)
    long date_from = ExtractJsonInt(json, "date_from", 0);
    long count = ExtractJsonInt(json, "count", 100);
    uint flags = (uint)ExtractJsonInt(json, "flags", (long)COPY_TICKS_ALL);
-   if(count > 10000) count = 10000;
+   if(count > 50000) count = 50000;
    
    MqlTick ticks[];
    ulong from_msc = (ulong)date_from * 1000;
    int copied = CopyTicks(symbol, ticks, flags, from_msc, (uint)count);
-   if(copied < 0)
+   if(copied <= 0)
       return "{\"status\":\"error\",\"error\":\"CopyTicks failed\",\"code\":" + (string)GetLastError() + "}";
-   if(copied == 0)
-      return "{\"status\":\"ok\",\"action\":\"copy_ticks_from\",\"data\":[]}";
       
    int digits = (int)SymbolInfoInteger(symbol, SYMBOL_DIGITS);
    string res = "{\"status\":\"ok\",\"action\":\"copy_ticks_from\",\"data\":[";
@@ -538,12 +557,9 @@ string HandleCopyTicksRange(string json)
    ulong from_msc = (ulong)date_from * 1000;
    ulong to_msc = (ulong)date_to * 1000;
    int copied = CopyTicksRange(symbol, ticks, flags, from_msc, to_msc);
-   if(copied < 0)
+   if(copied <= 0)
       return "{\"status\":\"error\",\"error\":\"CopyTicksRange failed\",\"code\":" + (string)GetLastError() + "}";
-   if(copied == 0)
-      return "{\"status\":\"ok\",\"action\":\"copy_ticks_range\",\"data\":[]}";
       
-   if(copied > 5000) copied = 5000;
    int digits = (int)SymbolInfoInteger(symbol, SYMBOL_DIGITS);
    string res = "{\"status\":\"ok\",\"action\":\"copy_ticks_range\",\"data\":[";
    for(int i = 0; i < copied; i++)
@@ -698,14 +714,12 @@ string HandleOrderSend(string json)
    request.position = (ulong)ExtractJsonInt(json, "position", 0);
    request.position_by = (ulong)ExtractJsonInt(json, "position_by", 0);
    
-   ResetLastError();
-   OrderSend(request, result);
-   if(result.retcode == 0)
-   {
-      result.retcode = (uint)GetLastError();
-   }
+   bool success = OrderSend(request, result);
    
-   string res = "{\"status\":\"ok\",\"action\":\"order_send\",\"data\":{";
+   string res = "{\"status\":\"" + (success ? "ok" : "error") + "\"";
+   if(!success)
+      res += ",\"error\":\"" + JsonEscape(result.comment) + "\",\"code\":" + (string)result.retcode;
+   res += ",\"action\":\"order_send\",\"data\":{";
    res += "\"retcode\":" + (string)result.retcode + ",";
    res += "\"deal\":" + (string)result.deal + ",";
    res += "\"order\":" + (string)result.order + ",";
@@ -713,7 +727,7 @@ string HandleOrderSend(string json)
    res += "\"price\":" + DoubleToString(result.price, 5) + ",";
    res += "\"bid\":" + DoubleToString(result.bid, 5) + ",";
    res += "\"ask\":" + DoubleToString(result.ask, 5) + ",";
-   res += "\"comment\":\"" + JsonEscape(result.comment != "" ? result.comment : (string)result.retcode) + "\",";
+   res += "\"comment\":\"" + JsonEscape(result.comment) + "\",";
    res += "\"request_id\":" + (string)result.request_id + ",";
    res += "\"retcode_external\":" + (string)result.retcode_external;
    res += "}}";
@@ -743,14 +757,12 @@ string HandleOrderCheck(string json)
    request.position = (ulong)ExtractJsonInt(json, "position", 0);
    request.position_by = (ulong)ExtractJsonInt(json, "position_by", 0);
    
-   ResetLastError();
-   OrderCheck(request, result);
-   if(result.retcode == 0)
-   {
-      result.retcode = (uint)GetLastError();
-   }
+   bool check = OrderCheck(request, result);
    
-   string res = "{\"status\":\"ok\",\"action\":\"order_check\",\"data\":{";
+   string res = "{\"status\":\"" + (check ? "ok" : "error") + "\"";
+   if(!check)
+      res += ",\"error\":\"" + JsonEscape(result.comment) + "\",\"code\":" + (string)result.retcode;
+   res += ",\"action\":\"order_check\",\"data\":{";
    res += "\"retcode\":" + (string)result.retcode + ",";
    res += "\"balance\":" + DoubleToString(result.balance, 2) + ",";
    res += "\"equity\":" + DoubleToString(result.equity, 2) + ",";
@@ -1096,5 +1108,4 @@ void OnTick()
 {
    OnTimer();
 }
-
 
