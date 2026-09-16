@@ -15,7 +15,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
     PORT=5000 \
     HOST=0.0.0.0
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && apt-get install -y --install-recommends \
     ca-certificates \
     curl \
     wget \
@@ -49,7 +49,7 @@ RUN dpkg --add-architecture i386 \
     && wget -O /etc/apt/keyrings/winehq-archive.key https://dl.winehq.org/wine-builds/winehq.key \
     && wget -NP /etc/apt/sources.list.d/ https://dl.winehq.org/wine-builds/ubuntu/dists/noble/winehq-noble.sources \
     && apt-get update \
-    && apt-get install -y --no-install-recommends winehq-staging \
+    && apt-get install -y --install-recommends winehq-staging \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
               /usr/share/doc/* \
