@@ -10,8 +10,20 @@
   },
   "servers": [
     {
+      "url": "http://localhost:5000",
+      "description": "Host Windows Localhost (MT5 Bridge Container: mt5bridge-metatrader5-1)"
+    },
+    {
+      "url": "http://mt5bridge-metatrader5-1:5000",
+      "description": "Docker Internal Network (mt5bridge-metatrader5-1:5000)"
+    },
+    {
+      "url": "http://host.docker.internal:5000",
+      "description": "Docker Host Gateway (Access from other containers)"
+    },
+    {
       "url": "/",
-      "description": "Local API Server"
+      "description": "Current Host / Relative Path"
     }
   ],
   "tags": [
@@ -1300,6 +1312,44 @@
           }
         }
       }
+    },
+    "/api/login": {
+      "post": {
+        "tags": [
+          "System"
+        ],
+        "summary": "Dynamic Account Login",
+        "description": "Authenticate MetaTrader 5 dynamically with new trading credentials and restart the terminal under Wine.",
+        "operationId": "api_login",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Authentication and Account Info",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid Request Parameters"
+          },
+          "500": {
+            "description": "Terminal Authentication Failure"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1620,6 +1670,36 @@
           "price_close": {
             "type": "number",
             "example": 1.085
+          }
+        }
+      },
+      "LoginRequest": {
+        "type": "object",
+        "required": [
+          "login",
+          "password",
+          "server"
+        ],
+        "properties": {
+          "login": {
+            "type": "integer",
+            "example": 512823067,
+            "description": "MT5 Account Login Number"
+          },
+          "password": {
+            "type": "string",
+            "example": "65xhNt78@",
+            "description": "MT5 Account Password"
+          },
+          "server": {
+            "type": "string",
+            "example": "XPMT5-DEMO",
+            "description": "MT5 Broker Server Name"
+          },
+          "symbol": {
+            "type": "string",
+            "example": "PETR4",
+            "description": "Optional default symbol to open on chart startup"
           }
         }
       }

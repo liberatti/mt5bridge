@@ -17,7 +17,7 @@ services:
       - MT5_PASSWORD=xxxxx
       - MT5_SERVER=MetaQuotes-Demo
       - MT5_INVESTOR=xxxxx
-      #- SECURITY_ENABLED=false
+      - SECURITY_ENABLED=false
       - API_KEY=xxxxx
     volumes:
       - mt5_data:/home/mt5user/.mt5

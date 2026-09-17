@@ -134,9 +134,9 @@ Once running, navigate to [`http://localhost:5000/`](http://localhost:5000/) to 
 | :--- | :--- | :--- |
 | `MT5_LOGIN` | `""` | MetaTrader 5 account login number |
 | `MT5_PASSWORD` | `""` | MetaTrader 5 account master password |
-| `MT5_SERVER` | `MetaQuotes-Demo` | Broker trade server hostname or label |
+| `MT5_SERVER` | `MetaQuotes-Demo` | Broker trade server hostname or label (e.g. `MetaQuotes-Demo`, `XPMT5-DEMO`, `XPMT5-PRD`) |
 | `MT5_INVESTOR` | `""` | Investor (read-only) password (optional) |
-| `MT5_STARTUP_SYMBOL` | `EURUSD` | Default chart symbol initialized on startup |
+| `MT5_STARTUP_SYMBOL` | `EURUSD` | Default chart symbol initialized on startup (automatically adapts to `PETR4` for XP/B3 brokers) |
 | `MT5_STARTUP_PERIOD` | `H1` | Default chart timeframe (`M1`, `M5`, `M15`, `H1`, `D1`, etc.) |
 | `SECURITY_ENABLED` | `true` | Enables or disables API authentication verification |
 | `API_KEY` | `""` | Secret API key required in `x-api-key` HTTP request header |
@@ -146,6 +146,18 @@ Once running, navigate to [`http://localhost:5000/`](http://localhost:5000/) to 
 | `THREADS` | `8` | Worker threads for Waitress WSGI production server |
 | `MT5_STARTUP_TIMEOUT`| `90` | Max seconds to wait for MT5 & EA gateway startup |
 | `SCREEN_RESOLUTION` | `1024x768x24` | Resolution for virtual framebuffer display (Xvfb) |
+
+---
+
+### 🏛️ Multi-Broker Support & `servers.dat`
+
+The vanilla MetaQuotes installer only includes default connectivity to `MetaQuotes-Demo`. For private broker clusters such as **XP Investimentos** (`XPMT5-DEMO`, `XPMT5-PRD`), the terminal requires a network access point catalog stored in **`config/servers.dat`**.
+
+- **Pre-configured Catalogs**: The repository bundles `config/servers.dat` and `config/servers_xp.dat` containing verified server endpoints for **XP Investimentos** and **MetaQuotes**.
+- **Automatic Broker Detection**:
+  - When `MT5_SERVER=XPMT5-DEMO` or `XPMT5-PRD`, the container automatically loads the XP server catalog and defaults `MT5_STARTUP_SYMBOL` to `PETR4` (compatible with B3).
+  - When `MT5_SERVER=MetaQuotes-Demo`, it defaults to `EURUSD` (compatible with Forex demo).
+- **Adding Other Brokers**: To add custom brokers (e.g., Clear, BTG Pactual, Genial), copy the `servers.dat` file from an existing Windows MT5 installation (`%APPDATA%\MetaQuotes\Terminal\<ID>\config\servers.dat`) into the project's `config/` folder before rebuilding.
 
 ---
 
@@ -176,10 +188,21 @@ All responses follow a consistent `nxcore` structure:
 
 | Endpoint | Method | Underlying MT5 Call | Description |
 | :--- | :---: | :--- | :--- |
+| `/api/login` | `POST` | Terminal Reconfig | Dynamically re-authenticates MT5 with new account, password, and broker server |
 | `/api/version` | `GET` | `mt5.version()` | Returns MT5 terminal build number, release date, and version string |
 | `/api/last_error` | `GET` | `mt5.last_error()` | Retrieves the last recorded error code and description |
 | `/api/terminal_info` | `GET` | `mt5.terminal_info()` | Terminal state (connected, trade enabled, paths, build) |
 | `/api/account_info` | `GET` | `mt5.account_info()` | Account balance, equity, margin, free margin, leverage |
+
+#### Dynamic Authentication (`POST /api/login`) Example:
+```json
+{
+  "login": 512823067,
+  "password": "YourPassword",
+  "server": "XPMT5-DEMO",
+  "symbol": "PETR4"
+}
+```
 
 ---
 

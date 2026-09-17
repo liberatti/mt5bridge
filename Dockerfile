@@ -108,7 +108,7 @@ COPY --chown=mt5user:mt5group mql5/ /opt/setup/mql5/
 COPY --chown=mt5user:mt5group config/ /opt/setup/config/
 COPY --chown=mt5user:mt5group entrypoint.sh /entrypoint.sh
 
-RUN chmod +x /entrypoint.sh
+RUN sed -i 's/\r$//' /entrypoint.sh && chmod +x /entrypoint.sh
 
 ENV HOME=/home/mt5user \
     WINEPREFIX=/home/mt5user/.mt5 \
