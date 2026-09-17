@@ -7,11 +7,7 @@ import threading
 from typing import Dict, Any, Optional
 from services.mt5_gateway import gateway_client as mt5
 from services.base_service import BaseService
-
-try:
-    from utils.template import render_template as render_ini_template
-except ImportError:
-    from api.utils.template import render_template as render_ini_template
+from utils.template import render_template as render_ini_template
 
 logger = logging.getLogger("system_service")
 
@@ -118,15 +114,25 @@ class SystemService(BaseService):
         # Synchronize servers.dat catalog if available
         servers_dst = os.path.join(mt5_dir, "config", "servers.dat")
         for srv_candidate in [
-            "/opt/setup/config/servers_xp.dat" if "XP" in str(server).upper() else "/opt/setup/config/servers.dat",
+            (
+                "/opt/setup/config/servers_xp.dat"
+                if "XP" in str(server).upper()
+                else "/opt/setup/config/servers.dat"
+            ),
             "/opt/setup/config/servers.dat",
-            os.path.join(os.path.dirname(__file__), "..", "..", "config", "servers.dat"),
+            os.path.join(
+                os.path.dirname(__file__), "..", "..", "config", "servers.dat"
+            ),
         ]:
             if os.path.isfile(srv_candidate):
                 try:
                     os.makedirs(os.path.dirname(servers_dst), exist_ok=True)
                     shutil.copyfile(srv_candidate, servers_dst)
-                    logger.info("Synchronized servers catalog from %s to %s", srv_candidate, servers_dst)
+                    logger.info(
+                        "Synchronized servers catalog from %s to %s",
+                        srv_candidate,
+                        servers_dst,
+                    )
                     break
                 except Exception as e:
                     logger.warning("Failed to copy servers catalog: %s", e)
@@ -134,7 +140,9 @@ class SystemService(BaseService):
         # Locate template candidate
         candidates = [
             "/opt/setup/config/common.ini.j2",
-            os.path.join(os.path.dirname(__file__), "..", "..", "config", "common.ini.j2"),
+            os.path.join(
+                os.path.dirname(__file__), "..", "..", "config", "common.ini.j2"
+            ),
             os.path.join(os.path.dirname(__file__), "..", "config", "common.ini.j2"),
             os.path.abspath("config/common.ini.j2"),
         ]
@@ -155,14 +163,18 @@ class SystemService(BaseService):
                         "MT5_LOGIN": str(login),
                         "MT5_PASSWORD": str(password),
                         "MT5_SERVER": str(server),
-                        "MT5_STARTUP_SYMBOL": str(symbol or os.environ.get("MT5_STARTUP_SYMBOL", "EURUSD")),
+                        "MT5_STARTUP_SYMBOL": str(
+                            symbol or os.environ.get("MT5_STARTUP_SYMBOL", "EURUSD")
+                        ),
                     },
                 )
             except Exception as e:
                 logger.error("Failed to render common.ini template: %s", e)
                 raise RuntimeError(f"Failed to generate common.ini: {e}")
         else:
-            logger.warning("common.ini.j2 template not found. Direct file update will be attempted.")
+            logger.warning(
+                "common.ini.j2 template not found. Direct file update will be attempted."
+            )
 
         # 4. Mark uninitialized
         BaseService._initialized = False
@@ -172,17 +184,26 @@ class SystemService(BaseService):
         if shutil.which("pkill"):
             subprocess.run(["pkill", "-9", "-f", "terminal64.exe"], capture_output=True)
         elif os.name == "nt":
-            subprocess.run(["taskkill", "/F", "/IM", "terminal64.exe"], capture_output=True)
+            subprocess.run(
+                ["taskkill", "/F", "/IM", "terminal64.exe"], capture_output=True
+            )
         time.sleep(2.0)
 
         # 6. Launch new terminal64.exe process in Wine
         terminal_exe = os.path.join(mt5_dir, "terminal64.exe")
         if os.path.isfile(terminal_exe):
-            logger.info("Restarting terminal64.exe in background with updated common.ini...")
+            logger.info(
+                "Restarting terminal64.exe in background with updated common.ini..."
+            )
             env = dict(os.environ)
             env["DISPLAY"] = os.environ.get("DISPLAY", ":0")
             wine_bin = shutil.which("wine") or "wine"
-            cmd = [wine_bin, "terminal64.exe", "/portable", r"/config:config\common.ini"]
+            cmd = [
+                wine_bin,
+                "terminal64.exe",
+                "/portable",
+                r"/config:config\common.ini",
+            ]
             subprocess.Popen(
                 cmd,
                 cwd=mt5_dir,
@@ -200,7 +221,10 @@ class SystemService(BaseService):
 
             threading.Thread(target=_dismiss_delayed, daemon=True).start()
         else:
-            logger.warning("terminal64.exe not found at %s. Skipping terminal restart.", terminal_exe)
+            logger.warning(
+                "terminal64.exe not found at %s. Skipping terminal restart.",
+                terminal_exe,
+            )
 
         # 7. Wait for Gateway reconnection
         logger.info("Waiting for MT5 TCP Gateway to reconnect...")
