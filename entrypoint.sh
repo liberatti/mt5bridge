@@ -67,18 +67,21 @@ if [ -f "$MT5_DIR/terminal64.exe" ]; then
         cp -r /opt/setup/mql5/* "$MT5_DIR/MQL5/" 2>/dev/null || true
     fi
 
-    # Synchronize server catalog (servers.dat / servers_xp.dat)
+    # Synchronize server catalog (servers.dat / servers_xp.dat / servers_btg.dat)
     if [[ "$MT5_SERVER" =~ ^XP ]] && [ -f "/opt/setup/config/servers_xp.dat" ]; then
         echo "[3/3] Loading XP Investimentos server catalog (servers_xp.dat)..."
         cp -f "/opt/setup/config/servers_xp.dat" "$MT5_DIR/config/servers.dat"
+    elif [[ "$MT5_SERVER" =~ (BTG|BancoBTG) ]] && [ -f "/opt/setup/config/servers_btg.dat" ]; then
+        echo "[3/3] Loading BTG Pactual server catalog (servers_btg.dat)..."
+        cp -f "/opt/setup/config/servers_btg.dat" "$MT5_DIR/config/servers.dat"
     elif [ -f "/opt/setup/config/servers.dat" ]; then
         echo "[3/3] Synchronizing servers.dat into MT5 config..."
         cp -f "/opt/setup/config/servers.dat" "$MT5_DIR/config/servers.dat"
     fi
 
     # Smart startup symbol default according to broker environment
-    if [[ "$MT5_SERVER" =~ ^XP ]] && [ "${MT5_STARTUP_SYMBOL:-EURUSD}" = "EURUSD" ]; then
-        echo "[3/3] XP broker detected: defaulting startup symbol to PETR4 for B3 compatibility."
+    if [[ "$MT5_SERVER" =~ (^XP|BTG|BancoBTG) ]] && [ "${MT5_STARTUP_SYMBOL:-EURUSD}" = "EURUSD" ]; then
+        echo "[3/3] B3 broker ($MT5_SERVER) detected: defaulting startup symbol to PETR4 for B3 compatibility."
         export MT5_STARTUP_SYMBOL="PETR4"
     elif [[ "$MT5_SERVER" =~ ^MetaQuotes ]] && [ "$MT5_STARTUP_SYMBOL" = "PETR4" ]; then
         echo "[3/3] MetaQuotes broker detected: defaulting startup symbol to EURUSD for Forex compatibility."

@@ -1,23 +1,47 @@
 volumes:
-  mt5_data:
+  mt5_xp_data:
+    driver: local
+  mt5_btg_data:
     driver: local
 
 services:
-  metatrader5:
+  mt5_xp:
     build:
       context: .
       dockerfile: Dockerfile
     image: liberatti/mt5bridge:latest
     ports:
       - "5000:5000"
+      - "22347:22347"
     environment:
-      - MT5_STARTUP_SYMBOL=EURUSD
-      - MT5_STARTUP_PERIOD=H1
-      - MT5_LOGIN=xxxxx
-      - MT5_PASSWORD=xxxxx
-      - MT5_SERVER=MetaQuotes-Demo
-      - MT5_INVESTOR=xxxxx
+      - MT5_STARTUP_SYMBOL=PETR4
+      - MT5_STARTUP_PERIOD=M1
+      - MT5_LOGIN=xxxxxxxxxxx
+      - MT5_PASSWORD=xxxxxxxxx
+      - MT5_SERVER=XPMT5-DEMO
+      - MT5_INVESTOR=xxxxxxx
       - SECURITY_ENABLED=false
-      - API_KEY=xxxxx
+      - API_KEY=xxxxxxx
     volumes:
-      - mt5_data:/home/mt5user/.mt5
+      - mt5_xp_data:/home/mt5user/.mt5
+
+  mt5_btg:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: liberatti/mt5bridge:latest
+    ports:
+      - "5001:5000"
+      - "22348:22347"
+    environment:
+      - MT5_STARTUP_SYMBOL=PETR4
+      - MT5_STARTUP_PERIOD=H1
+      - MT5_LOGIN=yyyyyyyyy
+      - MT5_PASSWORD=yyyyyyyy
+      # BTG Pactual opera apenas em ambiente de produção (PRD), não disponibiliza ambiente DEMO
+      - MT5_SERVER=BancoBTGPactual-PRD
+      - MT5_INVESTOR=yyyyyyyy
+      - SECURITY_ENABLED=false
+      - API_KEY=yyyyyyyyy
+    volumes:
+      - mt5_btg_data:/home/mt5user/.mt5

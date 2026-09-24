@@ -83,7 +83,7 @@ docker pull liberatti/mt5bridge:latest
 docker run -d --name mt5bridge \
   -p 5000:5000 \
   -p 22347:22347 \
-  -e MT5_LOGIN=112728385 \
+  -e MT5_LOGIN=999999999 \
   -e MT5_PASSWORD=YourPassword \
   -e MT5_SERVER=MetaQuotes-Demo \
   -e MT5_STARTUP_SYMBOL=EURUSD \
@@ -93,38 +93,71 @@ docker run -d --name mt5bridge \
 
 ### 2. Run with Docker Compose (Recommended)
 
-Create or use the provided [docker-compose.yml](file:///home/liberatti/workspace/github.com/liberatti/mt5bridge/docker-compose.yml):
+Use the provided [docker-compose.yml](file:///c:/devs/python/projetos_financeiros/mt5bridge/docker-compose.yml) configured with independent broker services:
 
 ```yaml
 volumes:
-  mt5_data:
+  mt5_xp_data:
+    driver: local
+  mt5_btg_data:
     driver: local
 
 services:
-  metatrader5:
+  mt5_xp:
+    build:
+      context: .
+      dockerfile: Dockerfile
     image: liberatti/mt5bridge:latest
-    container_name: mt5bridge
-    restart: unless-stopped
     ports:
       - "5000:5000"
       - "22347:22347"
     environment:
-      - MT5_LOGIN=112728385
+      - MT5_STARTUP_SYMBOL=PETR4
+      - MT5_STARTUP_PERIOD=M1
+      - MT5_LOGIN=999999999
       - MT5_PASSWORD=YourPassword
-      - MT5_SERVER=MetaQuotes-Demo
-      - MT5_STARTUP_SYMBOL=EURUSD
-      - MT5_STARTUP_PERIOD=H1
-      - API_KEY=YourSecretApiKey
+      - MT5_SERVER=XPMT5-DEMO
+      - MT5_INVESTOR=999999999
+      - SECURITY_ENABLED=false
+      - API_KEY=YourApiKey
     volumes:
-      - mt5_data:/home/mt5user/.mt5
+      - mt5_xp_data:/home/mt5user/.mt5
+
+  mt5_btg:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: liberatti/mt5bridge:latest
+    ports:
+      - "5001:5000"
+      - "22348:22347"
+    environment:
+      - MT5_STARTUP_SYMBOL=PETR4
+      - MT5_STARTUP_PERIOD=H1
+      - MT5_LOGIN=xxxxx
+      - MT5_PASSWORD=xxxxx
+      # BTG Pactual opera apenas em ambiente de produção (PRD), não disponibiliza ambiente DEMO
+      - MT5_SERVER=BancoBTGPactual-PRD
+      - MT5_INVESTOR=xxxxx
+      - SECURITY_ENABLED=false
+      - API_KEY=xxxxx
+    volumes:
+      - mt5_btg_data:/home/mt5user/.mt5
 ```
 
-Start the container in the background:
+Start the containers in the background:
 ```bash
+# Start all brokers:
 docker compose up -d
+
+# Or start a specific broker instance:
+docker compose up -d mt5_xp
+docker compose up -d mt5_btg
 ```
 
-Once running, navigate to [`http://localhost:5000/`](http://localhost:5000/) to access the Swagger UI.
+Once running, access the interactive Swagger UI and REST API:
+- **XP Investimentos instance**: [`http://localhost:5000/`](http://localhost:5000/) (TCP Gateway: `22347`)
+- **BTG Pactual instance**: [`http://localhost:5001/`](http://localhost:5001/) (TCP Gateway: `22348`)
 
 ---
 
@@ -134,9 +167,9 @@ Once running, navigate to [`http://localhost:5000/`](http://localhost:5000/) to 
 | :--- | :--- | :--- |
 | `MT5_LOGIN` | `""` | MetaTrader 5 account login number |
 | `MT5_PASSWORD` | `""` | MetaTrader 5 account master password |
-| `MT5_SERVER` | `MetaQuotes-Demo` | Broker trade server hostname or label (e.g. `MetaQuotes-Demo`, `XPMT5-DEMO`, `XPMT5-PRD`) |
+| `MT5_SERVER` | `MetaQuotes-Demo` | Broker trade server hostname or label (e.g. `MetaQuotes-Demo`, `XPMT5-DEMO`, `XPMT5-PRD`, `BancoBTGPactual-PRD`) |
 | `MT5_INVESTOR` | `""` | Investor (read-only) password (optional) |
-| `MT5_STARTUP_SYMBOL` | `EURUSD` | Default chart symbol initialized on startup (automatically adapts to `PETR4` for XP/B3 brokers) |
+| `MT5_STARTUP_SYMBOL` | `EURUSD` | Default chart symbol initialized on startup (automatically adapts to `PETR4` for B3 brokers like XP and BTG) |
 | `MT5_STARTUP_PERIOD` | `H1` | Default chart timeframe (`M1`, `M5`, `M15`, `H1`, `D1`, etc.) |
 | `SECURITY_ENABLED` | `true` | Enables or disables API authentication verification |
 | `API_KEY` | `""` | Secret API key required in `x-api-key` HTTP request header |
@@ -151,13 +184,16 @@ Once running, navigate to [`http://localhost:5000/`](http://localhost:5000/) to 
 
 ### 🏛️ Multi-Broker Support & `servers.dat`
 
-The vanilla MetaQuotes installer only includes default connectivity to `MetaQuotes-Demo`. For private broker clusters such as **XP Investimentos** (`XPMT5-DEMO`, `XPMT5-PRD`), the terminal requires a network access point catalog stored in **`config/servers.dat`**.
+The vanilla MetaQuotes installer only includes default connectivity to `MetaQuotes-Demo`. For private broker clusters such as **XP Investimentos** (`XPMT5-DEMO`, `XPMT5-PRD`) and **BTG Pactual** (`BancoBTGPactual-PRD`), the terminal requires a network access point catalog stored in **`config/servers.dat`**.
 
-- **Pre-configured Catalogs**: The repository bundles `config/servers.dat` and `config/servers_xp.dat` containing verified server endpoints for **XP Investimentos** and **MetaQuotes**.
+- **Pre-configured Catalogs**: The repository bundles `config/servers.dat`, `config/servers_xp.dat` and `config/servers_btg.dat` containing verified server endpoints for **XP Investimentos**, **BTG Pactual** and **MetaQuotes**.
 - **Automatic Broker Detection**:
-  - When `MT5_SERVER=XPMT5-DEMO` or `XPMT5-PRD`, the container automatically loads the XP server catalog and defaults `MT5_STARTUP_SYMBOL` to `PETR4` (compatible with B3).
+  - When `MT5_SERVER=XPMT5-DEMO` or `XPMT5-PRD`, the container automatically loads `servers_xp.dat` and defaults `MT5_STARTUP_SYMBOL` to `PETR4` (compatible with B3).
+  - When `MT5_SERVER=BancoBTGPactual-PRD` or any server containing `BTG`, the container automatically loads `servers_btg.dat` and defaults `MT5_STARTUP_SYMBOL` to `PETR4` (compatible with B3).
   - When `MT5_SERVER=MetaQuotes-Demo`, it defaults to `EURUSD` (compatible with Forex demo).
-- **Adding Other Brokers**: To add custom brokers (e.g., Clear, BTG Pactual, Genial), copy the `servers.dat` file from an existing Windows MT5 installation (`%APPDATA%\MetaQuotes\Terminal\<ID>\config\servers.dat`) into the project's `config/` folder before rebuilding.
+> [!NOTE]
+> **BTG Pactual Environment**: O BTG Pactual disponibiliza conexões MetaTrader 5 exclusivamente em ambiente de **produção (`BancoBTGPactual-PRD`)**; a instituição não possui ambiente `DEMO`. Para testes simulados na B3 utilize os servidores DEMO da XP (`XPMT5-DEMO`).
+- **Adding Other Brokers**: To add other custom brokers (e.g., Clear, Genial), copy the `servers.dat` file from an existing Windows MT5 installation (`%APPDATA%\MetaQuotes\Terminal\<ID>\config\servers.dat`) into the project's `config/` folder before rebuilding.
 
 ---
 
@@ -197,9 +233,9 @@ All responses follow a consistent `nxcore` structure:
 #### Dynamic Authentication (`POST /api/login`) Example:
 ```json
 {
-  "login": 512823067,
+  "login": 999999999999,
   "password": "YourPassword",
-  "server": "XPMT5-DEMO",
+  "server": "XPMT5-DEMO",  // or "BancoBTGPactual-PRD"
   "symbol": "PETR4"
 }
 ```

@@ -1,3 +1,4 @@
+import time
 from datetime import datetime, timezone
 from typing import Dict, List, Any
 from services.mt5_gateway import gateway_client as mt5
@@ -70,7 +71,14 @@ class SymbolsService(BaseService):
         """
         self.ensure_initialized()
         mt5.symbol_select(symbol, True)
-        tick = mt5.symbol_info_tick(symbol)
+
+        tick = None
+        for attempt in range(4):
+            tick = mt5.symbol_info_tick(symbol)
+            if tick is not None:
+                break
+            time.sleep(0.3)
+
         if tick is None:
             info = mt5.symbol_info(symbol)
             if info:

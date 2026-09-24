@@ -113,17 +113,31 @@ class SystemService(BaseService):
 
         # Synchronize servers.dat catalog if available
         servers_dst = os.path.join(mt5_dir, "config", "servers.dat")
-        for srv_candidate in [
-            (
-                "/opt/setup/config/servers_xp.dat"
-                if "XP" in str(server).upper()
-                else "/opt/setup/config/servers.dat"
-            ),
+        server_str = str(server).upper() if server else ""
+        srv_candidates = []
+        if "XP" in server_str:
+            srv_candidates.extend([
+                "/opt/setup/config/servers_xp.dat",
+                os.path.join(
+                    os.path.dirname(__file__), "..", "..", "config", "servers_xp.dat"
+                ),
+            ])
+        elif "BTG" in server_str:
+            srv_candidates.extend([
+                "/opt/setup/config/servers_btg.dat",
+                os.path.join(
+                    os.path.dirname(__file__), "..", "..", "config", "servers_btg.dat"
+                ),
+            ])
+
+        srv_candidates.extend([
             "/opt/setup/config/servers.dat",
             os.path.join(
                 os.path.dirname(__file__), "..", "..", "config", "servers.dat"
             ),
-        ]:
+        ])
+
+        for srv_candidate in srv_candidates:
             if os.path.isfile(srv_candidate):
                 try:
                     os.makedirs(os.path.dirname(servers_dst), exist_ok=True)
