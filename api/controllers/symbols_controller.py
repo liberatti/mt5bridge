@@ -66,7 +66,10 @@ def api_symbol_info_tick(symbol):
     Returns:
         Response: Standardized JSON with tick data dictionary and ISO timestamp.
     """
-    return response_data(service.symbol_info_tick(symbol))
+    try:
+        return response_data(service.symbol_info_tick(symbol))
+    except ValueError as e:
+        return response_error(msg=str(e), code=404)
 
 
 @symbols_bp.route("/symbol_select", methods=["POST"])

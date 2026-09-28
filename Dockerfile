@@ -15,7 +15,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
     PORT=5000 \
     HOST=0.0.0.0
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && apt-get install -y --install-recommends \
     ca-certificates \
     curl \
     wget \
@@ -29,6 +29,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     net-tools \
     winbind \
     git \
+    libegl1 \
+    libgl1 \
+    libgl1-mesa-dri \
+    libglx-mesa0 \
     python3 \
     python3-pip \
     && locale-gen en_US.UTF-8 \
@@ -45,7 +49,7 @@ RUN dpkg --add-architecture i386 \
     && wget -O /etc/apt/keyrings/winehq-archive.key https://dl.winehq.org/wine-builds/winehq.key \
     && wget -NP /etc/apt/sources.list.d/ https://dl.winehq.org/wine-builds/ubuntu/dists/noble/winehq-noble.sources \
     && apt-get update \
-    && apt-get install -y --no-install-recommends winehq-staging \
+    && apt-get install -y --install-recommends winehq-staging \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
               /usr/share/doc/* \
@@ -77,9 +81,9 @@ RUN Xvfb :99 -screen 0 1024x768x16 >/dev/null 2>&1 & XPID=$! \
     && wineserver -w \
     && echo "==> [2/3] Executando instalador do MetaTrader 5..." \
     && (wine /opt/setup/mt5setup.exe /auto &) \
-    && for i in $(seq 1 45); do \
+    && for i in $(seq 1 60); do \
         [ -f "/opt/wine-template/drive_c/Program Files/MetaTrader 5/terminal64.exe" ] && break; \
-        sleep 2; \
+        sleep 10; \
     done \
     && wineserver -w \
     && echo "==> [3/3] Compilando MQL5 RestGateway Expert Advisor..." \
@@ -104,11 +108,11 @@ COPY --chown=mt5user:mt5group mql5/ /opt/setup/mql5/
 COPY --chown=mt5user:mt5group config/ /opt/setup/config/
 COPY --chown=mt5user:mt5group entrypoint.sh /entrypoint.sh
 
-RUN chmod +x /entrypoint.sh
+RUN sed -i 's/\r$//' /entrypoint.sh && chmod +x /entrypoint.sh
 
 ENV HOME=/home/mt5user \
     WINEPREFIX=/home/mt5user/.mt5 \
-    WINEDEBUG=+err \
+    WINEDEBUG=-all \
     WINEDLLOVERRIDES="mscoree,mshtml=" \
     WINEARCH=win64 \
     DISPLAY=:0 \
@@ -125,6 +129,9 @@ ENV HOME=/home/mt5user \
     MT5_GATEWAY_TIMEOUT=10.0 \
     SECURITY_ENABLED=true
 USER mt5user
+
 EXPOSE 5000
+
+EXPOSE 22347
 
 ENTRYPOINT ["/entrypoint.sh"]

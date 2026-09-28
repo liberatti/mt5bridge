@@ -1,3 +1,4 @@
+import time
 from datetime import datetime, timezone
 from typing import Dict, List, Any
 from services.mt5_gateway import gateway_client as mt5
@@ -70,8 +71,33 @@ class SymbolsService(BaseService):
         """
         self.ensure_initialized()
         mt5.symbol_select(symbol, True)
-        tick = mt5.symbol_info_tick(symbol)
+
+        tick = None
+        for attempt in range(4):
+            tick = mt5.symbol_info_tick(symbol)
+            if tick is not None:
+                break
+            time.sleep(0.3)
+
         if tick is None:
+            info = mt5.symbol_info(symbol)
+            if info:
+                last = getattr(info, "last", 0.0) or getattr(info, "session_price_last", 0.0) or getattr(info, "session_close", 0.0)
+                bid = getattr(info, "bid", 0.0) or last
+                ask = getattr(info, "ask", 0.0) or last
+                if last > 0 or bid > 0 or ask > 0:
+                    t = getattr(info, "time", 0) or int(datetime.now(timezone.utc).timestamp())
+                    return {
+                        "time": t,
+                        "bid": bid,
+                        "ask": ask,
+                        "last": last,
+                        "volume": getattr(info, "volume", 0),
+                        "time_msc": t * 1000,
+                        "flags": 0,
+                        "volume_real": getattr(info, "volume_real", 0.0),
+                        "time_iso": datetime.fromtimestamp(t, tz=timezone.utc).isoformat(),
+                    }
             raise ValueError(f"Tick for {symbol} not found: {mt5.last_error()}")
         res = tick._asdict()
         res["time_iso"] = datetime.fromtimestamp(res["time"], tz=timezone.utc).isoformat()

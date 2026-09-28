@@ -1,4 +1,5 @@
 import os
+import time
 import json
 import socket
 import logging
@@ -179,19 +180,45 @@ class Mt5GatewayClient:
 
                 if res.get("status") != "ok":
                     err_msg = res.get("error", "Unknown gateway error")
-                    self._last_error = (res.get("code", -1), err_msg)
-                    raise RuntimeError(f"MT5 Gateway Error on '{action}': {err_msg}")
+                    code = res.get("code")
+                    self._last_error = (code if code is not None else -1, err_msg)
+                    code_str = f" (code: {code})" if code is not None else ""
+                    raise RuntimeError(f"MT5 Gateway Error on '{action}': {err_msg}{code_str}")
 
                 self._last_error = (0, "Success")
                 return res.get("data", {})
 
         except Exception as e:
-            self._last_error = (-1, str(e))
             if not silent:
                 logger.warning("Gateway TCP request '%s' failed: %s", action, e)
             else:
                 logger.debug("Gateway TCP request '%s' silent failure: %s", action, e)
+            if self._last_error[0] == 0:
+                self._last_error = (-1, str(e))
             raise
+
+    def _send_request_with_retry(
+        self,
+        action: str,
+        params: dict = None,
+        retries: int = 4,
+        delay: float = 0.2,
+    ):
+        last_exc = None
+        for attempt in range(retries):
+            try:
+                silent = attempt < (retries - 1)
+                return self._send_request(action, params, silent=silent)
+            except RuntimeError as e:
+                last_exc = e
+                err_str = str(e)
+                # Check for transient history sync errors while MT5 terminal downloads candles from server
+                if ("CopyRates failed" in err_str or "CopyTicks failed" in err_str or "code: 4401" in err_str) and attempt < (retries - 1):
+                    time.sleep(delay * (attempt + 1))
+                    continue
+                raise
+        if last_exc:
+            raise last_exc
 
     def last_error(self):
         return self._last_error
@@ -236,12 +263,53 @@ class Mt5GatewayClient:
         return data.get("total", 0)
 
     def symbol_info(self, symbol: str):
-        data = self._send_request("symbol_info", {"symbol": symbol})
-        return StructObject(data)
+        try:
+            data = self._send_request("symbol_info", {"symbol": symbol}, silent=True)
+            if not data:
+                return None
+            return StructObject(data)
+        except Exception:
+            return None
 
     def symbol_info_tick(self, symbol: str):
-        data = self._send_request("symbol_info_tick", {"symbol": symbol})
-        return StructObject(data)
+        try:
+            data = self._send_request(
+                "symbol_info_tick", {"symbol": symbol}, silent=True
+            )
+            if data:
+                return StructObject(data)
+        except Exception:
+            pass
+
+        # Fallback: construct tick approximation from symbol_info if available (e.g. after-hours, auction, illiquid)
+        try:
+            info = self.symbol_info(symbol)
+            if info:
+                last = (
+                    info.get("last", 0.0)
+                    or info.get("session_price_last", 0.0)
+                    or info.get("session_close", 0.0)
+                )
+                bid = info.get("bid", 0.0) or last
+                ask = info.get("ask", 0.0) or last
+                if last > 0 or bid > 0 or ask > 0:
+                    t = info.get("time", 0)
+                    return StructObject(
+                        {
+                            "time": t,
+                            "bid": bid,
+                            "ask": ask,
+                            "last": last,
+                            "volume": info.get("volume", 0),
+                            "time_msc": t * 1000,
+                            "flags": 0,
+                            "volume_real": info.get("volume_real", 0.0),
+                        }
+                    )
+        except Exception:
+            pass
+
+        return None
 
     def symbols_get(self, group: str = None):
         params = {}
@@ -256,7 +324,7 @@ class Mt5GatewayClient:
             if hasattr(date_from, "timestamp")
             else int(date_from)
         )
-        data = self._send_request(
+        data = self._send_request_with_retry(
             "copy_rates_from",
             {
                 "symbol": symbol,
@@ -270,7 +338,7 @@ class Mt5GatewayClient:
     def copy_rates_from_pos(
         self, symbol: str, timeframe: int, start_pos: int, count: int
     ):
-        data = self._send_request(
+        data = self._send_request_with_retry(
             "copy_rates_from_pos",
             {
                 "symbol": symbol,
@@ -290,7 +358,7 @@ class Mt5GatewayClient:
         ts_to = (
             int(date_to.timestamp()) if hasattr(date_to, "timestamp") else int(date_to)
         )
-        data = self._send_request(
+        data = self._send_request_with_retry(
             "copy_rates_range",
             {
                 "symbol": symbol,
@@ -307,7 +375,7 @@ class Mt5GatewayClient:
             if hasattr(date_from, "timestamp")
             else int(date_from)
         )
-        data = self._send_request(
+        data = self._send_request_with_retry(
             "copy_ticks_from",
             {
                 "symbol": symbol,
@@ -327,7 +395,7 @@ class Mt5GatewayClient:
         ts_to = (
             int(date_to.timestamp()) if hasattr(date_to, "timestamp") else int(date_to)
         )
-        data = self._send_request(
+        data = self._send_request_with_retry(
             "copy_ticks_range",
             {
                 "symbol": symbol,
