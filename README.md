@@ -1,16 +1,14 @@
-<p align="center">
-  <img src="assets/logo.svg" alt="MT5Bridge REST API" width="680" />
-</p>
-
-<p align="center">
-  <a href="https://opensource.org/licenses/Apache-2.0"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="License" /></a>
-  <a href="https://www.docker.com/"><img src="https://img.shields.io/badge/Platform-Docker-blue.svg?logo=docker" alt="Docker" /></a>
-  <a href="https://github.com/sponsors/liberatti"><img src="https://img.shields.io/badge/Sponsor-♥-ea4aaa?style=flat&logo=github" alt="Sponsor" /></a>
-</p>
+# MT5Bridge REST API
 
 High-performance, modular, and headless Docker solution designed to run **MetaTrader 5 (MT5)** on Linux via **WineHQ Staging**, exposing **all official MetaTrader 5 methods** through a robust **Python Flask REST API** with built-in **interactive Swagger UI / OpenAPI 3.0** documentation.
 
 Based on the official MQL5 reference: [MetaTrader 5 on Linux](https://www.mql5.com/en/articles/625).
+
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg?style=flat)](https://opensource.org/licenses/Apache-2.0)
+[![Docker Pulls](https://img.shields.io/docker/pulls/liberatti/mt5bridge?style=flat-square&logo=docker&logoColor=white&color=2496ED)](https://hub.docker.com/r/liberatti/mt5bridge)
+[![Sponsor](https://img.shields.io/badge/Sponsor-♥-ea4aaa?style=flat-square&logo=github)](https://github.com/sponsors/liberatti)
+
+
 
 
 ---
