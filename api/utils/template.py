@@ -7,11 +7,12 @@ def render_template(template_path: str, output_path: str, context: dict = None) 
     template_dir = os.path.dirname(os.path.abspath(template_path))
     template_file = os.path.basename(template_path)
 
-    env = Environment(loader=FileSystemLoader(template_dir), autoescape=False)
+    # Internal non-HTML configuration templating (e.g. server configs)
+    env = Environment(loader=FileSystemLoader(template_dir), autoescape=False)  # nosemgrep: python.flask.security.xss.audit.direct-use-of-jinja2.direct-use-of-jinja2
     template = env.get_template(template_file)
 
     ctx = dict(os.environ) if context is None else {**os.environ, **context}
-    rendered = template.render(ctx)
+    rendered = template.render(ctx)  # nosemgrep: python.flask.security.xss.audit.direct-use-of-jinja2.direct-use-of-jinja2
 
     os.makedirs(os.path.dirname(os.path.abspath(output_path)), exist_ok=True)
     with open(output_path, "w", encoding="utf-8") as f:
