@@ -4,12 +4,9 @@ High-performance, modular, and headless Docker solution designed to run **MetaTr
 
 Based on the official MQL5 reference: [MetaTrader 5 on Linux](https://www.mql5.com/en/articles/625).
 
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg?style=flat)](https://opensource.org/licenses/Apache-2.0)
-[![Docker Pulls](https://img.shields.io/docker/pulls/liberatti/mt5bridge?style=flat-square&logo=docker&logoColor=white&color=2496ED)](https://hub.docker.com/r/liberatti/mt5bridge)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg?style=flat-square)](https://opensource.org/licenses/Apache-2.0)
+![Docker Pulls](https://img.shields.io/docker/pulls/liberatti/mt5bridge?style=flat-square&logo=docker&logoColor=white&color=2496ED)
 [![Sponsor](https://img.shields.io/badge/Sponsor-♥-ea4aaa?style=flat-square&logo=github)](https://github.com/sponsors/liberatti)
-
-
-
 
 ---
 
