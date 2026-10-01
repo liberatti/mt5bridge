@@ -32,6 +32,7 @@ int listen(ulong s, int backlog);
 ulong accept(ulong s, uchar &addr[], int &addrlen);
 int send(ulong s, uchar &buf[], int len, int flags);
 int recv(ulong s, uchar &buf[], int len, int flags);
+int shutdown(ulong s, int how);
 int closesocket(ulong s);
 int WSAGetLastError();
 #import
@@ -1003,10 +1004,10 @@ int OnInit()
    saddr[1] = 0;
    saddr[2] = (uchar)((InpPort >> 8) & 0xFF); // Port MSB
    saddr[3] = (uchar)(InpPort & 0xFF);        // Port LSB
-   saddr[4] = 127;                            // 127.0.0.1
+   saddr[4] = 0;                            // 0.0.0.0 (INADDR_ANY for container network access)
    saddr[5] = 0;
    saddr[6] = 0;
-   saddr[7] = 1;
+   saddr[7] = 0;
    
    if(bind(g_server_socket, saddr, 16) == SOCKET_ERROR)
    {
@@ -1026,7 +1027,7 @@ int OnInit()
       return INIT_FAILED;
    }
    
-   Print("[RestGateway] Servidor TCP ouvindo com sucesso em 127.0.0.1:", InpPort);
+   Print("[RestGateway] Servidor TCP ouvindo com sucesso em 0.0.0.0:", InpPort);
    EventSetMillisecondTimer(20); // Poll every 20ms for fast request processing
    return INIT_SUCCEEDED;
 }
@@ -1084,7 +1085,7 @@ void OnTimer()
       int bytes_read = recv(client_sock, req_buf, 65535, 0);
       if(bytes_read > 0)
       {
-         string req_str = CharArrayToString(req_buf, 0, bytes_read);
+         string req_str = CharArrayToString(req_buf, 0, bytes_read, CP_UTF8);
          string res_str = ProcessRequest(req_str) + "\n";
          
          uchar res_buf[];
@@ -1093,8 +1094,19 @@ void OnTimer()
          
          if(res_len > 0)
          {
-            send(client_sock, res_buf, res_len, 0);
+            int total_sent = 0;
+            while(total_sent < res_len)
+            {
+               uchar chunk[];
+               int chunk_size = res_len - total_sent;
+               ArrayResize(chunk, chunk_size);
+               ArrayCopy(chunk, res_buf, 0, total_sent, chunk_size);
+               int sent = send(client_sock, chunk, chunk_size, 0);
+               if(sent <= 0) break;
+               total_sent += sent;
+            }
          }
+         shutdown(client_sock, 1);
       }
       
       closesocket(client_sock);

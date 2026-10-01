@@ -209,11 +209,19 @@ class Mt5GatewayClient:
             try:
                 silent = attempt < (retries - 1)
                 return self._send_request(action, params, silent=silent)
-            except RuntimeError as e:
+            except (RuntimeError, ConnectionResetError, socket.error) as e:
                 last_exc = e
                 err_str = str(e)
-                # Check for transient history sync errors while MT5 terminal downloads candles from server
-                if ("CopyRates failed" in err_str or "CopyTicks failed" in err_str or "code: 4401" in err_str) and attempt < (retries - 1):
+                # Check for transient history sync errors, temporary socket resets or empty responses
+                is_transient = (
+                    "CopyRates failed" in err_str
+                    or "CopyTicks failed" in err_str
+                    or "code: 4401" in err_str
+                    or "Empty response" in err_str
+                    or "Connection reset" in err_str
+                    or "Broken pipe" in err_str
+                )
+                if is_transient and attempt < (retries - 1):
                     time.sleep(delay * (attempt + 1))
                     continue
                 raise
@@ -255,7 +263,7 @@ class Mt5GatewayClient:
         return StructObject(data)
 
     def account_info(self):
-        data = self._send_request("account_info")
+        data = self._send_request_with_retry("account_info", retries=3, delay=0.15)
         return StructObject(data)
 
     def symbols_total(self) -> int:
