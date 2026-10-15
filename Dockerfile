@@ -18,7 +18,6 @@ ENV DEBIAN_FRONTEND=noninteractive \
 RUN apt-get update && apt-get install -y --install-recommends \
     ca-certificates \
     curl \
-    wget \
     gnupg \
     locales \
     cabextract \
@@ -46,8 +45,8 @@ RUN apt-get update && apt-get install -y --install-recommends \
 
 RUN dpkg --add-architecture i386 \
     && mkdir -pm755 /etc/apt/keyrings \
-    && wget -O /etc/apt/keyrings/winehq-archive.key https://dl.winehq.org/wine-builds/winehq.key \
-    && wget -NP /etc/apt/sources.list.d/ https://dl.winehq.org/wine-builds/ubuntu/dists/noble/winehq-noble.sources \
+    && curl -fsSL https://dl.winehq.org/wine-builds/winehq.key -o /etc/apt/keyrings/winehq-archive.key \
+    && curl -fsSL https://dl.winehq.org/wine-builds/ubuntu/dists/noble/winehq-noble.sources -o /etc/apt/sources.list.d/winehq-noble.sources \
     && apt-get update \
     && apt-get install -y --install-recommends winehq-staging \
     && apt-get clean \
@@ -133,5 +132,8 @@ USER mt5user
 EXPOSE 5000
 
 EXPOSE 22347
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:5000/ || exit 1
 
 ENTRYPOINT ["/entrypoint.sh"]

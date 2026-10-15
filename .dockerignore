@@ -56,3 +56,4 @@ wine/
 # OS generated files
 .DS_Store
 Thumbs.db
+/**/.pytest_cache

@@ -197,13 +197,12 @@ The vanilla MetaQuotes installer only includes default connectivity to `MetaQuot
 All responses follow a consistent `nxcore` structure:
 
 ```json
-// Success Response (HTTP 200)
 {
   "code": 200,
-  "data": { ... }
+  "data": { }
 }
-
-// Error Response (HTTP 400 / 500)
+```
+```json
 {
   "code": 400,
   "message": "Validation Error / Bad Request",
@@ -230,7 +229,7 @@ All responses follow a consistent `nxcore` structure:
 {
   "login": 999999999999,
   "password": "YourPassword",
-  "server": "XPMT5-DEMO",  // or "BancoBTGPactual-PRD"
+  "server": "XPMT5-DEMO", 
   "symbol": "PETR4"
 }
 ```

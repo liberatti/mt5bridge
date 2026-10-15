@@ -55,3 +55,4 @@ Thumbs.db
 
 TODO_*.md
 TODO.md
+/**/.pytest_cache
